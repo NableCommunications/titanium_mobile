@@ -327,6 +327,12 @@ public abstract class TiViewProxy extends KrollProxy implements Handler.Callback
 						TiDimension nativeLeft = new TiDimension(position[0], TiDimension.TYPE_LEFT);
 						TiDimension nativeTop = new TiDimension(position[1], TiDimension.TYPE_TOP);
 
+						//by hscho@linearhub.com
+						if(TiApplication.getAppCurrentActivity() == null){
+							android.os.Process.killProcess(android.os.Process.myPid());
+							return true;
+						}
+						
 						// TiDimension needs a view to grab the window manager, so we'll just use the decorview of the current window
 						View decorView = TiApplication.getAppRootOrCurrentActivity().getWindow().getDecorView();
 						if (decorView != null) {
