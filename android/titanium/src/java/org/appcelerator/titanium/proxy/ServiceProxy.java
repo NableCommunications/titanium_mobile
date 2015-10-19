@@ -308,4 +308,20 @@ public class ServiceProxy extends KrollProxy
 			}
 		});
 	}
+
+	@Kroll.method
+	public void sendBroadcast(IntentProxy intent)
+	{
+		if ( service != null ){
+			service.sendBroadcast(intent.getIntent());
+		}
+	}
+
+	@Kroll.method
+	public void startActivity(IntentProxy intent)
+	{
+		if ( service != null ){
+			service.startActivity(intent.getIntent());
+		}
+	}
 }
