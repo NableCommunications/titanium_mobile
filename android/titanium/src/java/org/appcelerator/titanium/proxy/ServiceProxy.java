@@ -13,6 +13,7 @@ import org.appcelerator.titanium.TiApplication;
 import org.appcelerator.titanium.TiBaseService;
 import org.appcelerator.titanium.TiBaseService.TiServiceBinder;
 
+import android.app.Activity;	//by hscho@linearhub.com
 import android.app.Service;
 import android.content.ComponentName;
 import android.content.Context;
@@ -106,6 +107,24 @@ public class ServiceProxy extends KrollProxy
 		
 	}
 
+	//by hscho@linearhub.com
+	@Kroll.method
+	public void sendBroadcast(IntentProxy intent)
+	{
+		if ( service != null ){
+			service.sendBroadcast(intent.getIntent());
+		}
+	}
+	
+	//by hscho@linearhub.com
+	@Kroll.method
+	public void startActivity(IntentProxy intent)
+	{
+		if ( service != null ){
+			service.startActivity(intent.getIntent());
+		}
+	}
+	
 	private void bindAndInvokeService()
 	{
 		serviceConnection = new ServiceConnection()
