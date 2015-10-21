@@ -82,6 +82,8 @@ public class TiListView extends TiUIView implements OnSearchChangeListener {
 	private RelativeLayout searchLayout;
 	private static final String TAG = "TiListView";
 
+	private boolean bReverseMode = false;
+	private boolean bBottomState = true;
 
 	/* We cache properties that already applied to the recycled list tiem in ViewItem.java
 	 * However, since Android randomly selects a cached view to recycle, our cached properties
@@ -172,7 +174,28 @@ public class TiListView extends TiUIView implements OnSearchChangeListener {
 						((EditText)focusedView).setSelection(cursorPosition);
 						selectionSet = true;
 					}
-
+				}
+			}
+			
+			if (bReverseMode == true ) {
+				//Log.e(TAG, "ListView OnLayout changed=" + changed + " bBottomState=" + bBottomState);
+				if ( changed == true && bBottomState == true ) {
+					if ( sections.size() > 0 ) {
+						ListSectionProxy section = null;
+						section = sections.get(0);
+						if ( section != null ) {
+							if ( adapter.getCount() > 0 ) {
+								//Log.e(TAG, "ListView scrollToItem bottom");
+								final int position = findItemPosition(0, adapter.getCount() - 1);
+								if (position > -1) {
+									scrollToItem(0, adapter.getCount() - 1, false);
+								}
+								else{
+									scrollToItem(0, adapter.getCount() - 2, false);
+								}
+							}
+						}
+					}
 				}
 			}
 		}
@@ -182,7 +205,7 @@ public class TiListView extends TiUIView implements OnSearchChangeListener {
 	public class TiBaseAdapter extends BaseAdapter {
 
 		Activity context;
-		
+
 		public TiBaseAdapter(Activity activity) {
 			context = activity;
 		}
@@ -300,6 +323,10 @@ public class TiListView extends TiUIView implements OnSearchChangeListener {
 		wrapper.addView(listView);
 		adapter = new TiBaseAdapter(activity);
 		
+		bReverseMode = ((ListViewProxy)proxy).getReverseMode();
+		if ( bReverseMode == true )
+			listView.setTranscriptMode(ListView.TRANSCRIPT_MODE_DISABLED);
+
 		//init inflater
 		if (inflater == null) {
 			inflater = (LayoutInflater)activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -317,6 +344,7 @@ public class TiListView extends TiUIView implements OnSearchChangeListener {
 		{
 			private int _firstVisibleItem = 0;
 			private int _visibleItemCount = 0;
+			private int _totalItemCount = 0;
 			private boolean canFireScrollStart = true;
 			private boolean canFireScrollEnd = false;
 
@@ -328,6 +356,20 @@ public class TiListView extends TiUIView implements OnSearchChangeListener {
 					eventName = TiC.EVENT_SCROLLEND;
 					canFireScrollEnd = false;
 					canFireScrollStart = true;
+					
+					if(bReverseMode==true)
+					{
+						if(_firstVisibleItem+_visibleItemCount >= _totalItemCount-1)
+						{
+							bBottomState = true;
+						}
+						else{
+							bBottomState = false;
+						}
+						
+						//Log.e(TAG, "ListView onScrollStateChanged" + " bBottomState=" + bBottomState);						
+						((ListViewProxy)fProxy).setBottomState(bBottomState);
+					}
 				} else if (scrollState == OnScrollListener.SCROLL_STATE_TOUCH_SCROLL && canFireScrollStart) {
 					eventName = TiC.EVENT_SCROLLSTART;					
 					canFireScrollEnd = true;
@@ -367,6 +409,7 @@ public class TiListView extends TiUIView implements OnSearchChangeListener {
 			{
 				_firstVisibleItem = firstVisibleItem;
 				_visibleItemCount = visibleItemCount;
+				_totalItemCount = totalItemCount;
 			}
 		});
 		
@@ -466,6 +509,53 @@ public class TiListView extends TiUIView implements OnSearchChangeListener {
 		markers.add(new Pair<Integer, Integer>(sectionIndex, itemIndex));
 	}
 	
+	public void setReverseMode(boolean bMode)
+	{
+		bReverseMode = bMode;
+	}
+
+	public boolean getReverseMode()
+	{
+		return bReverseMode;
+	}
+
+	public void setBottomState(boolean bState)
+	{
+		bBottomState = bState;
+	}
+
+	public boolean getBottomState()
+	{
+		return bBottomState;
+	}
+
+	public void scrollAndNotifyDataSetChanged(int offset, int itemLength)
+	{
+		int nFirstVisibleItem = listView.getFirstVisiblePosition();
+		//Log.e(TAG, "ListView scrollAndNotifyDataSetChanged offset=" + offset + " itemLength=" + itemLength + " nFirstVisibleItem=" + nFirstVisibleItem);
+		if(offset-1 <= nFirstVisibleItem){
+			int nScrollIndex = nFirstVisibleItem + itemLength;
+			int nScrollY = 0;
+	        View v = listView.getChildAt(0);
+	        if(v != null)
+	        	nScrollY = (int) v.getTop();
+	        else
+	        	nScrollY = 0;
+	        
+	        if(nFirstVisibleItem==0 && nScrollY==0){
+	        	nScrollIndex += 1;
+	        }
+	        
+	        adapter.notifyDataSetChanged();
+	        
+	        //Log.e(TAG, "ListView scrollAndNotifyDataSetChanged" + " nScrollIndex=" + nScrollIndex + " nScrollY=" + nScrollY);
+	        listView.setSelectionFromTop(nScrollIndex, nScrollY);
+		}
+		else{
+			adapter.notifyDataSetChanged();
+		}
+	}
+
 	public void processProperties(KrollDict d) {
 		
 		if (d.containsKey(TiC.PROPERTY_TEMPLATES)) {
@@ -581,6 +671,12 @@ public class TiListView extends TiUIView implements OnSearchChangeListener {
 		listView.addFooterView(footerView, null, false);
 
 		listView.setAdapter(adapter);
+		
+		if ( bReverseMode == true )
+		{
+			listView.setSelection( adapter.getCount()-1 );
+		}
+		
 		super.processProperties(d);
 		
 	}
@@ -918,7 +1014,7 @@ public class TiListView extends TiUIView implements OnSearchChangeListener {
 			ListSectionProxy section = sections.get(i);
 			if (i == sectionIndex) {
 				if (sectionItemIndex >= section.getContentCount()) {
-					Log.e(TAG, "Invalid item index");
+					//Log.e(TAG, "Invalid item index");
 					return -1;
 				}
 				position += sectionItemIndex;
