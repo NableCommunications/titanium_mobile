@@ -67,6 +67,7 @@ public class ListSectionProxy extends ViewProxy
 	private static final int MSG_SET_FOOTER_TITLE = MSG_FIRST_ID + 709;
 	private static final int MSG_SET_HEADER_VIEW = MSG_FIRST_ID + 710;
 	private static final int MSG_SET_FOOTER_VIEW = MSG_FIRST_ID + 711;
+	private static final int MSG_UPDATE_ITEMS = MSG_FIRST_ID + 800;
 
 	public class ListItemData
 	{
@@ -351,6 +352,14 @@ public class ListSectionProxy extends ViewProxy
 				result.setResult(null);
 				return true;
 			}
+			
+			case MSG_UPDATE_ITEMS:{
+				AsyncResult result = (AsyncResult) msg.obj;
+				KrollDict data = (KrollDict) result.getArg();
+				handleUpdateItems(data.get(TiC.EVENT_PROPERTY_INDEX), data.get(TiC.PROPERTY_DATA));
+				result.setResult(null);
+				return true;
+			}
 
 			default: {
 				return super.handleMessage(msg);
@@ -489,6 +498,18 @@ public class ListSectionProxy extends ViewProxy
 		}
 	}
 
+	@Kroll.method
+	public void updateItems(Object index, Object data) {
+		if (TiApplication.isUIThread()) {
+			handleUpdateItems(index,  data);
+		} else {
+			KrollDict d = new KrollDict();
+			d.put(TiC.EVENT_PROPERTY_INDEX, index);
+			d.put(TiC.PROPERTY_DATA, data);
+			TiMessenger.sendBlockingMainMessage(getMainHandler().obtainMessage(MSG_UPDATE_ITEMS), d);
+		}
+	}
+
 	public void processPreloadData()
 	{
 		if (itemProperties != null && preload) {
@@ -500,6 +521,46 @@ public class ListSectionProxy extends ViewProxy
 	public void refreshItems()
 	{
 		handleSetItems(itemProperties.toArray());
+	}
+	
+	private void processDatas(Object[] index, Object[] items){
+		if (listItemData == null) {
+			return;
+		}
+		
+		TiListViewTemplate[] temps = new TiListViewTemplate[items.length];
+		//First pass through data, we process template and update
+		//default properties based data given
+		for (int i = 0; i < items.length; i++) {
+			Object itemData = items[i];
+			if (itemData instanceof HashMap) {
+				KrollDict d = new KrollDict((HashMap)itemData);
+				TiListViewTemplate template = processTemplate(d, TiConvert.toInt(index[i]));
+				template.updateOrMergeWithDefaultProperties(d, true);
+				temps[i] = template;
+			}
+		}
+		
+		//Second pass we would merge properties
+		for (int i = 0; i < items.length; i++) {
+			Object itemData = items[i];
+			if (itemData instanceof HashMap) {
+				KrollDict d = new KrollDict((HashMap)itemData);
+				TiListViewTemplate template = temps[i];
+				if (template != null) {
+					template.updateOrMergeWithDefaultProperties(d, false);
+				}
+				ListItemData itemD = new ListItemData(d, template);
+				d.remove(TiC.PROPERTY_TEMPLATE);
+				//listItemData.add(TiConvert.toInt(index[i]), itemD);
+				listItemData.set(TiConvert.toInt(index[i]), itemD);
+			}
+		}
+		
+		Log.d(TAG, "Call notifyDataSetChanged in processDatas");//, Log.DEBUG_MODE );
+
+		if ( adapter != null )
+			adapter.notifyDataSetChanged();
 	}
 
 	private void processData(Object[] items, int offset)
@@ -540,7 +601,14 @@ public class ListSectionProxy extends ViewProxy
 			applyFilter(getListView().getSearchText());
 		}
 		//Notify adapter that data has changed.
-		adapter.notifyDataSetChanged();
+		if ( getListView() != null && getListView().getReverseMode() == true)
+		{
+			getListView().scrollAndNotifyDataSetChanged(offset, items.length);
+		}
+		else
+		{
+			adapter.notifyDataSetChanged();
+		}
 	}
 
 	private void handleSetItems(Object data)
@@ -706,6 +774,37 @@ public class ListSectionProxy extends ViewProxy
 		setProperty(TiC.PROPERTY_ITEMS, itemProperties.toArray());
 	}
 
+	private void handleUpdateItems(Object index, Object data) {
+		if (data instanceof Object[] && index instanceof Object[] ) {
+			Object[] indexs = (Object[]) index;
+			Object[] views = (Object[]) data;
+			
+			if (itemProperties == null) {
+				itemProperties = new ArrayList<Object>(Arrays.asList(views));
+			} else {
+				if ( indexs.length <= 0 || indexs.length != views.length ) {
+					Log.e(TAG, "Invalid index to handleUpdateItems", Log.DEBUG_MODE);
+					return;
+				}
+				
+				for(int i = 0; i < indexs.length; i++){
+					int itemIndex = TiConvert.toInt(indexs[i]);
+					itemProperties.set( itemIndex, views[i]);
+				}
+			}
+			//only process items when listview's properties is processed.
+			if (getListView() == null) {
+				Log.d(TAG, "GetListView() is Null");
+				preload = true;
+				return;
+			}
+			Log.d(TAG, "Call ProcessDatas");
+			processDatas(indexs, views);
+		} else {
+			Log.e(TAG, "Invalid argument type to insertItemsAt", Log.DEBUG_MODE);
+		}
+	}
+	
 	private TiListViewTemplate processTemplate(KrollDict itemData, int index)
 	{
 
