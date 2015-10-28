@@ -17,6 +17,9 @@
 
 @implementation TiUIListSectionProxy {
   NSMutableArray *_items;
+
+  BOOL bReverseMode;
+  NSUInteger nInsertItemCount;
 }
 
 @synthesize delegate = _delegate;
@@ -29,6 +32,9 @@
   self = [super init];
   if (self) {
     _items = [[NSMutableArray alloc] initWithCapacity:20];
+
+    bReverseMode = false;
+    nInsertItemCount = 0;
   }
   return self;
 }
@@ -40,6 +46,16 @@
   [_headerTitle release];
   [_footerTitle release];
   [super dealloc];
+}
+
+- (void) setReverseMode:(bool)bMode
+{
+  bReverseMode = bMode;
+}
+
+-(NSUInteger) getInsertItemCount
+{
+  return nInsertItemCount;
 }
 
 - (NSString *)apiName
@@ -200,13 +216,25 @@
         return;
       }
       [_items replaceObjectsInRange:NSMakeRange(insertIndex, 0) withObjectsFromArray:items];
-      id<TiUIListViewDelegateView> theDelegate = [theDispatcher delegateView];
-      if (theDelegate != nil) {
-        [theDelegate updateSearchResults:nil];
-        if ([theDispatcher isKindOfClass:[TiViewProxy class]]) {
-          [(TiViewProxy *)theDispatcher contentsWillChange];
+      if(bReverseMode==true){
+        CGSize beforeContentSize = tableView.contentSize;
+        [tableView reloadData];
+        CGSize afterContentSize = tableView.contentSize;
+
+        CGPoint afterContentOffset = tableView.contentOffset;
+        CGPoint newContentOffset = CGPointMake(afterContentOffset.x, afterContentOffset.y + afterContentSize.height - beforeContentSize.height);
+        tableView.contentOffset = newContentOffset;
+      }
+      else{
+        id <TiUIListViewDelegateView> theDelegate = [theDispatcher delegateView];
+        if (theDelegate != nil) {
+          [theDelegate updateSearchResults:nil];
+          if ([theDispatcher isKindOfClass:[TiViewProxy class]]) {
+            [(TiViewProxy*)theDispatcher contentsWillChange];
+          }
         }
       }
+      nInsertItemCount = [items count];
     }];
   } else {
     [theDispatcher dispatchUpdateAction:^(UITableView *tableView) {
@@ -222,6 +250,8 @@
       }
       [tableView insertRowsAtIndexPaths:indexPaths withRowAnimation:animation];
       [indexPaths release];
+
+      nInsertItemCount = [items count];
     }];
   }
 }
@@ -374,6 +404,37 @@
       [indexPaths release];
     }];
   }
+}
+
+- (void)updateItems:(id)args
+{
+    DebugLog(@"[INFO] ListSectionProxy : Called UpdateItems");
+    ENSURE_ARG_COUNT(args, 2);
+    NSArray *itemIndexs = [args objectAtIndex:0];
+    NSArray *items = [args objectAtIndex:1];
+    ENSURE_TYPE_OR_NIL(items,NSArray);
+    NSDictionary *properties = [args count] > 2 ? [args objectAtIndex:2] : nil;
+    UITableViewRowAnimation animation = [TiUIListView animationStyleForProperties:properties];
+    
+    [self.dispatcher dispatchUpdateAction:^(UITableView *tableView) {
+        if ( [itemIndexs count] != [items count] ) {
+            DebugLog(@"[WARN] ListView: update items index size and item size mismatch");
+            return;
+        }
+        
+        NSUInteger count = [itemIndexs count];
+        NSMutableArray *indexPaths = [[NSMutableArray alloc] initWithCapacity:count];
+        
+        for( int i = 0; i < count; i++ )
+        {
+            NSInteger updateitemindex = [TiUtils intValue:[itemIndexs objectAtIndex:i]];
+            [indexPaths addObject:[NSIndexPath indexPathForRow:updateitemindex inSection:_sectionIndex]];
+            [_items replaceObjectAtIndex:updateitemindex withObject:[items objectAtIndex:i]];
+        }
+        
+        [tableView reloadRowsAtIndexPaths:indexPaths withRowAnimation:UITableViewRowAnimationNone];
+        [indexPaths release];
+    }];
 }
 
 #pragma mark - TiUIListViewDelegate
