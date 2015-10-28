@@ -27,6 +27,10 @@
 - (void)deselectAll:(BOOL)animated;
 - (void)updateIndicesForVisibleRows;
 
+- (void)setReverseMode:(bool)bMode;
+- (void)setBottomState:(bool)bState;
+- (void)setInsertItemCount:(int)count;
+
 + (UITableViewRowAnimation)animationStyleForProperties:(NSDictionary*)properties;
 
 @end
