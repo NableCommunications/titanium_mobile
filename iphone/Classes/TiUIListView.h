@@ -24,6 +24,10 @@
 - (void)viewResignFocus;
 - (void)viewGetFocus;
 
+- (void)setReverseMode:(bool)bMode;
+- (void)setBottomState:(bool)bState;
+- (void)setInsertItemCount:(int)count;
+
 + (UITableViewRowAnimation)animationStyleForProperties:(NSDictionary *)properties;
 - (NSIndexPath *)pathForSearchPath:(NSIndexPath *)indexPath;
 
