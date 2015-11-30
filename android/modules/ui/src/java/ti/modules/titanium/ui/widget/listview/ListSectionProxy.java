@@ -678,7 +678,16 @@ public class ListSectionProxy extends ViewProxy
 	{
 		deleteItems(index, count);
 		if (adapter != null) {
-			adapter.notifyDataSetChanged();
+			//adapter.notifyDataSetChanged();
+            //Notify adapter that data has changed.
+            if ( getListView() != null && getListView().getReverseMode() == true)
+            {
+                getListView().scrollAndNotifyDataSetChanged(index, -count);
+            }
+            else
+            {
+                adapter.notifyDataSetChanged();
+            }
 		}
 	}
 
