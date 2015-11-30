@@ -340,12 +340,24 @@
                 return;
             }
             [_items removeObjectsInRange:NSMakeRange(deleteIndex, actualDeleteCount)];
-            id <TiUIListViewDelegateView> theDelegate = [theDispatcher delegateView];
-            if (theDelegate != nil) {
-                [theDelegate updateSearchResults:nil];
-                if ([theDispatcher isKindOfClass:[TiViewProxy class]]) {
-                    [(TiViewProxy*)theDispatcher contentsWillChange];
-                }
+
+            if(bReverseMode==true){
+                CGSize beforeContentSize = tableView.contentSize;
+                [tableView reloadData];
+                CGSize afterContentSize = tableView.contentSize;
+                
+                CGPoint afterContentOffset = tableView.contentOffset;
+                CGPoint newContentOffset = CGPointMake(afterContentOffset.x, afterContentOffset.y + afterContentSize.height - beforeContentSize.height);
+                tableView.contentOffset = newContentOffset;
+            }
+            else{
+	            id <TiUIListViewDelegateView> theDelegate = [theDispatcher delegateView];
+	            if (theDelegate != nil) {
+	                [theDelegate updateSearchResults:nil];
+	                if ([theDispatcher isKindOfClass:[TiViewProxy class]]) {
+	                    [(TiViewProxy*)theDispatcher contentsWillChange];
+	                }
+	            }
             }
         }];
     } else {
