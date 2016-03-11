@@ -215,8 +215,9 @@ USE_VIEW_FOR_CONTENT_HEIGHT
 	[self cancelPendingImageLoads]; //Just in case we have a crusty old urlRequest.
 	NSDictionary* info = nil;
 	NSNumber* hires = [self valueForKey:@"hires"];
-	if (hires) {
-		info = [NSDictionary dictionaryWithObject:hires forKey:@"hires"];
+    NSNumber* nocache = [self valueForKey:@"nocache"];
+    if (hires || nocache) {
+		info = [NSDictionary dictionaryWithObjectsAndKeys:hires,@"hires",nocache,@"nocache",nil];
 	}
 	urlRequest = [[[ImageLoader sharedLoader] loadImage:url delegate:self userInfo:info] retain];
 }
