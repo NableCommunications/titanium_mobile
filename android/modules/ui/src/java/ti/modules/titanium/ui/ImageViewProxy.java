@@ -24,6 +24,7 @@ import android.app.Activity;
 	TiC.PROPERTY_IMAGE,
 	TiC.PROPERTY_IMAGES,
 	TiC.PROPERTY_REPEAT_COUNT,
+	"nocache",
 	TiC.PROPERTY_URL
 })
 public class ImageViewProxy extends ViewProxy

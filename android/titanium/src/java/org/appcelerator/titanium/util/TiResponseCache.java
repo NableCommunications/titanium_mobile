@@ -51,6 +51,7 @@ public class TiResponseCache extends ResponseCache
 	private static final int INITIAL_DELAY = 10000;
 	private static final int CLEANUP_DELAY = 60000;
 	private static HashMap<String, ArrayList<CompleteListener>> completeListeners = new HashMap<String, ArrayList<CompleteListener>>();
+	private static HashMap<String, String> noCacheMap = new HashMap<String, String>();
 	private static long maxCacheSize = 0;
 
 	// List of Video Media Formats from http://developer.android.com/guide/appendix/media-formats.html
@@ -222,6 +223,11 @@ public class TiResponseCache extends ResponseCache
 		return false;
 	}
 
+	public static void setNoCache(URI uri)
+	{
+		String hash = DigestUtils.shaHex(uri.toString());
+		noCacheMap.put(hash, "true");
+	}
 	/**
 	 * Get the cached content for uri. It works for all kinds of ResponseCache.
 	 * @param uri
@@ -431,6 +437,11 @@ public class TiResponseCache extends ResponseCache
 		if (cacheControl != null && cacheControl.matches("^.*(no-cache|no-store|must-revalidate|max-age=0).*")) {
 			return null; // See RFC-2616
 		}
+		
+		String noCacheHash = DigestUtils.shaHex(uri.toString());
+		if (noCacheMap.containsKey(noCacheHash)) {
+			return null;
+		}		
 
 		boolean skipTransferEncodingHeader = false;
 		String tEncoding = getHeader(headers, "transfer-encoding");

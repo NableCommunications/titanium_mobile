@@ -9,6 +9,7 @@ package org.appcelerator.titanium.util;
 import java.io.InputStream;
 import java.lang.ref.SoftReference;
 import java.net.URI;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
@@ -133,6 +134,7 @@ public class TiDownloadManager implements Handler.Callback
 				// all we want to do is instigate putting this into the cache, and this
 				// is enough for that:
 				InputStream stream = uri.toURL().openStream();
+
 				KrollStreamHelper.pump(stream, null);
 				stream.close();
 
