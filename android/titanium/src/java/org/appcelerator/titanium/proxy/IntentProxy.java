@@ -12,6 +12,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import android.content.ClipData;
 
 import org.appcelerator.kroll.KrollDict;
 import org.appcelerator.kroll.KrollProxy;
@@ -390,6 +391,27 @@ public class IntentProxy extends KrollProxy
 	public String getData()
 	{
 		return intent.getDataString();
+	}
+
+	@Kroll.method @Kroll.getProperty
+	public String[] getDatas()
+	{
+		if(intent.getData()!=null){
+			return new String[]{intent.getDataString()};
+		}
+		else{
+			List<String> list = new ArrayList<String>();
+            ClipData clipData = intent.getClipData();
+            if (clipData != null) {
+                for (int i = 0; i < clipData.getItemCount(); i++) {
+                    ClipData.Item item = clipData.getItemAt(i);
+                    if(item!=null && item.getUri()!=null){
+                    	list.add(item.getUri().toString());
+                    }
+                }
+            }
+            return list.toArray(new String[0]);
+		}
 	}
 
 	/**
