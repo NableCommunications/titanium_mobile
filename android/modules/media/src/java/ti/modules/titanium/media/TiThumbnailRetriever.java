@@ -57,6 +57,7 @@ public class TiThumbnailRetriever implements Handler.Callback{
 			thumbnailResponseHandler.handleThumbnailResponse(event);
 			return;
 		}
+		
 		Message message = runtimeHandler.obtainMessage(MSG_GET_BITMAP);
 		message.getData().putInt(TiC.PROPERTY_OPTIONS, optionSelected);
 		message.getData().putIntArray(TiC.PROPERTY_TIME, arrayOfTimes);
@@ -149,7 +150,7 @@ public class TiThumbnailRetriever implements Handler.Callback{
 				if(mUri == null){
 					return -1;
 				}
-
+				
 				try {
 					if (URLUtil.isAssetUrl(mUri.toString())) { // DST: 20090606 detect
 																// asset url
@@ -170,7 +171,8 @@ public class TiThumbnailRetriever implements Handler.Callback{
 					} else {
 						mUri = TiUIHelper.getRedirectUri(mUri);
 						if (Build.VERSION.SDK_INT >= 14){
-							mMediaMetadataRetriever.setDataSource(mUri.toString(), new HashMap<String, String>());
+							//mMediaMetadataRetriever.setDataSource(mUri.toString(), new HashMap<String, String>());
+								mMediaMetadataRetriever.setDataSource(TiApplication.getInstance(), mUri);
 						}
 						else{
 							mMediaMetadataRetriever.setDataSource(mUri.toString());
