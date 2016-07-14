@@ -1520,7 +1520,13 @@ public abstract class TiBaseActivity extends AppCompatActivity
 			}
 		}
 
-		orientationListener.disable();
+		//hscho crash 예외처리.
+		try{
+			orientationListener.disable();
+		}
+		catch(Exception e){
+		}
+		
 
 		super.onDestroy();
 
