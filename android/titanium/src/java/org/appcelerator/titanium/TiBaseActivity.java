@@ -1317,8 +1317,15 @@ public abstract class TiBaseActivity extends AppCompatActivity
 
 		// Checkpoint for ti.foreground event
 		//String deployType = tiApp.getAppProperties().getString("ti.deploytype", "unknown");
-		if(TiApplication.getInstance().isAnalyticsEnabled()){
-			analytics.sendAppForegroundEvent();
+		
+		//hscho crash 예외처리.
+		try{
+			if(TiApplication.getInstance().isAnalyticsEnabled()){
+				analytics.sendAppForegroundEvent();
+			}
+		}
+		catch(Exception e){
+			
 		}
 	}
 
