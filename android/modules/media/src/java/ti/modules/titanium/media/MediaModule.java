@@ -260,9 +260,7 @@ public class MediaModule extends KrollModule
 		}
 		if(nativeApp){
             String nativeCameraPackage = null;
-            PackageManager packageManager = getPackageManager();
-
-            Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE, null);
+            PackageManager packageManager = TiApplication.getInstance().getPackageManager();
             List<ResolveInfo> groupApps = packageManager.queryIntentActivities(intent, 0);
 
             for(int i=groupApps.size()-1; i>=0; i--) {
