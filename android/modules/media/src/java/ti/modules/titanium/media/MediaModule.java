@@ -251,6 +251,29 @@ public class MediaModule extends KrollModule
 		//Create Intent
 		Uri fileUri = Uri.fromFile(imageFile); // create a file to save the image
 		Intent intent = new Intent(intentType);
+		boolean nativeApp = false;
+		if (cameraOptions.containsKeyAndNotNull("nativeApp")) {
+			nativeApp = cameraOptions.getBoolean("nativeApp");
+		}
+		if(nativeApp){
+            String nativeCameraPackage = null;
+            PackageManager packageManager = getPackageManager();
+
+            Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE, null);
+            List<ResolveInfo> groupApps = packageManager.queryIntentActivities(intent, 0);
+
+            for(int i=groupApps.size()-1; i>=0; i--) {
+                ResolveInfo resolveInfo = groupApps.get(i);
+                if(resolveInfo.activityInfo.applicationInfo.sourceDir.startsWith("/system/")){
+                	nativeCameraPackage = resolveInfo.activityInfo.packageName;
+                	break;
+                }
+            }
+            if(nativeCameraPackage==null){
+            	return;
+            }
+            intent.setPackage(nativeCameraPackage);
+		}
 		intent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri);
 		intent.putExtra(MediaStore.EXTRA_VIDEO_QUALITY, videoQuality);
 		intent.putExtra("android.intent.extras.CAMERA_FACING", cameraType);
