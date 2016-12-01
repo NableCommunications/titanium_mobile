@@ -63,6 +63,8 @@ import android.os.Vibrator;
 import android.provider.MediaStore;
 import android.view.Window;
 
+import java.util.List;
+
 @SuppressWarnings("deprecation")
 @Kroll.module @ContextSpecific
 public class MediaModule extends KrollModule
