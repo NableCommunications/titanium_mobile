@@ -130,11 +130,11 @@ public class TiCameraActivity extends TiBaseActivity implements SurfaceHolder.Ca
 			int previewHeight = MeasureSpec.getSize(heightMeasureSpec);
 
 			// Set the preview size to the most optimal given the target size
-			List<Size> pictSizes = camera.getParameters().getSupportedPictureSizes();
-            Size pictureSize = getOptimalPictureSize(pictSizes);
-			if (pictureSize != null) {
-				optimalPreviewSize = getOptimalPreviewSize(supportedPreviewSizes, pictureSize.width, pictureSize.height);
-			}
+            if(camera!=null){
+                List<Size> pictSizes = camera.getParameters().getSupportedPictureSizes();
+                Size pictureSize = getOptimalPictureSize(pictSizes);
+                optimalPreviewSize = getOptimalPreviewSize(supportedPreviewSizes, pictureSize.width, pictureSize.height);
+            }
 			//optimalPreviewSize = getOptimalPreviewSize(supportedPreviewSizes, previewWidth, previewHeight);
 			optimalVideoSize = getOptimalPreviewSize(supportedVideoSizes, previewWidth, previewHeight);
 			if (optimalPreviewSize != null) {
