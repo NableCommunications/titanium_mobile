@@ -50,6 +50,7 @@ import android.view.ViewGroup.LayoutParams;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.content.pm.PackageManager;
+import android.util.TypedValue;
 
 @SuppressWarnings("deprecation")
 public class TiCameraActivity extends TiBaseActivity implements SurfaceHolder.Callback, MediaRecorder.OnInfoListener
@@ -188,11 +189,13 @@ public class TiCameraActivity extends TiBaseActivity implements SurfaceHolder.Ca
 		previewLayout = new PreviewLayout(this);
 		cameraLayout = new FrameLayout(this);
 		cameraLayout.setBackgroundColor(Color.BLACK);
-		cameraLayout.addView(previewLayout, new FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT,
-			LayoutParams.MATCH_PARENT, Gravity.CENTER));
+		//cameraLayout.addView(previewLayout, new FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT, Gravity.CENTER));
+		FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT, Gravity.TOP);
+        int topMargin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 50, getResources().getDisplayMetrics());
+        params.setMargins(0, topMargin, 0, 0);
+        cameraLayout.addView(previewLayout, params);		
 
 		setContentView(cameraLayout);
-
 	}
 
 	public void surfaceChanged(SurfaceHolder previewHolder, int format, int width, int height)
