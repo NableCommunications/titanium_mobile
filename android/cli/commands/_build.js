@@ -3453,6 +3453,7 @@ AndroidBuilder.prototype.generateAndroidManifest = function generateAndroidManif
 				'activity': {
 					'name': 'ti.modules.titanium.media.TiCameraActivity',
 					'configChanges': ['keyboardHidden', 'orientation'],
+					'screenOrientation': 'portrait',
 					'theme': '@style/Theme.AppCompat.Translucent.NoTitleBar.Fullscreen'
 				}
 			}
