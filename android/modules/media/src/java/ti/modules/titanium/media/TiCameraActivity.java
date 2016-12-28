@@ -147,10 +147,10 @@ public class TiCameraActivity extends TiBaseActivity implements SurfaceHolder.Ca
 			}
 			if (previewHeight < previewWidth / aspectRatio) {
 				//previewHeight = (int) (previewWidth / aspectRatio + .5);
-				previewWidth = (int) (previewWidth / aspectRatio + .5);
+				previewWidth = (int) (previewHeight * aspectRatio + .5);
 			} else {
 				//previewWidth = (int) (previewHeight * aspectRatio + .5);
-				previewHeight = (int) (previewHeight * aspectRatio + .5);
+				previewHeight = (int) (previewWidth / aspectRatio + .5);
 			}
 			setMeasuredDimension(previewWidth, previewHeight);
 			
