@@ -21,6 +21,7 @@
 #import <CoreSpotlight/CoreSpotlight.h>
 #import <QuartzCore/QuartzCore.h>
 #import <libkern/OSAtomic.h>
+#import <Intents/Intents.h>
 
 TiApp *sharedApp;
 
@@ -1136,6 +1137,15 @@ TI_INLINE void waitForMemoryPanicCleared(); //WARNING: This must never be run on
 
   if ([userActivity userInfo] != nil) {
     [dict setObject:[userActivity userInfo] forKey:@"userInfo"];
+  }
+
+  if([TiUtils isIOS9OrGreater] && [[userActivity activityType] isEqualToString:@"INStartAudioCallIntent"]){
+      INInteraction *interaction = userActivity.interaction;
+      INStartAudioCallIntent *startAudioCallIntent = (INStartAudioCallIntent *)interaction.intent;
+      INPerson *contact = startAudioCallIntent.contacts[0];
+      INPersonHandle *personHandle = contact.personHandle;
+      NSString *phoneNumber = personHandle.value;
+      [dict setObject:phoneNumber forKey:@"INStartAudioCallIntentActivityValue"];
   }
 
   // Update launchOptions so that we send only expected values rather than NSUserActivity
