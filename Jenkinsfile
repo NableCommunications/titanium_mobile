@@ -147,7 +147,7 @@ timestamps {
 			} // end 'Build' stage
 			
 			stage('Security') {
-				if (!isPR) {
+				//if (!isPR) {
 					// Clean up and install only production dependencies
 					sh 'yarn install --production'
 
@@ -170,7 +170,7 @@ timestamps {
 					   step([$class: 'ThreadFixPublisher', appId: '136', scanFiles: scanFiles])
 					}
 					//step([$class: 'WarningsPublisher', canComputeNew: false, canResolveRelativePaths: false, consoleParsers: [[parserName: 'Node Security Project Vulnerabilities'], [parserName: 'RetireJS']], defaultEncoding: '', excludePattern: '', healthy: '', includePattern: '', messagesPattern: '', unHealthy: ''])
-				}
+				//}
 			  } // stage
 			
 		} // end node for checkout/build
