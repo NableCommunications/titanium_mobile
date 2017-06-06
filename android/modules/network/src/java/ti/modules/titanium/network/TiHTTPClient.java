@@ -1195,7 +1195,7 @@ public class TiHTTPClient
 						outputStream = new ProgressOutputStream(client.getOutputStream(), new ProgressListener() {
 							public void progress(int progress) {
 								KrollDict data = new KrollDict();
-								double currentProgress = ((double) progress/totalLength);
+								double currentProgress = ((double) progress/contentLength);
 								if (currentProgress > 1) currentProgress = 1;
 								data.put("progress", currentProgress);
 								dispatchCallback(TiC.PROPERTY_ONSENDSTREAM, data);
