@@ -30,6 +30,7 @@ import org.appcelerator.titanium.TiC;
 import org.appcelerator.titanium.TiContext;
 import org.appcelerator.titanium.TiFileProxy;
 import org.appcelerator.titanium.io.TiBaseFile;
+import org.appcelerator.titanium.io.TiFileProvider;
 import org.appcelerator.titanium.io.TiFile;
 import org.appcelerator.titanium.io.TiFileFactory;
 import org.appcelerator.titanium.proxy.TiViewProxy;
@@ -44,6 +45,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ClipData;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.database.Cursor;
@@ -132,6 +134,18 @@ public class MediaModule extends KrollModule
 	
 	private static String mediaType = MEDIA_TYPE_PHOTO;
 	private static String extension = ".jpg";
+
+	private static class ApiLevel16
+	{
+		private ApiLevel16() {}
+
+		public static void setIntentClipData(Intent intent, ClipData data)
+		{
+			if (intent != null) {
+				intent.setClipData(data);
+			}
+		}
+	}
 
 	public MediaModule()
 	{
@@ -252,8 +266,12 @@ public class MediaModule extends KrollModule
 		}
 		
 		//Create Intent
-		Uri fileUri = Uri.fromFile(imageFile); // create a file to save the image
+		Uri fileUri = TiFileProvider.createUriFrom(imageFile);
 		Intent intent = new Intent(intentType);
+		intent.setFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
+		if (Build.VERSION.SDK_INT >= 16) {
+			ApiLevel16.setIntentClipData(intent, android.content.ClipData.newRawUri("", fileUri));
+		}
 		boolean nativeApp = false;
 		if (cameraOptions.containsKeyAndNotNull("nativeApp")) {
 			nativeApp = cameraOptions.getBoolean("nativeApp");
