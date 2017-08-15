@@ -614,7 +614,7 @@ public abstract class TiBaseActivity extends AppCompatActivity
 			}
 			KrollRuntime.incrementActivityRefCount();
 			finishAndRemoveTask();
-
+			android.os.Process.killProcess(android.os.Process.myPid());
 			return;
 		}
 
