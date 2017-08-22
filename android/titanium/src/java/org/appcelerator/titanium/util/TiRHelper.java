@@ -81,7 +81,7 @@ public class TiRHelper {
 	    try {
 	        i = getClass(prefix + classAndFieldNames[0]).getDeclaredField(classAndFieldNames[1]).getInt(null);
 	    } catch (Exception e) {
-	        Log.e(TAG, "Error looking up resource: " + e.getMessage(), e, Log.DEBUG_MODE);
+	        //Log.e(TAG, "Error looking up resource: " + e.getMessage(), e, Log.DEBUG_MODE);
 	        valCache.put(path, 0);
 	        throw new ResourceNotFoundException(path);
 	    }
