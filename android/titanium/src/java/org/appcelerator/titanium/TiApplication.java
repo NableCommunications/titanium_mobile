@@ -275,22 +275,24 @@ public abstract class TiApplication extends Application implements KrollApplicat
 	 */
 	public Activity getCurrentActivity()
 	{
-		int activityStackSize;
+		synchronized(this) {
+			int activityStackSize;
 
-		while ((activityStackSize = activityStack.size()) > 0) {
-			Activity activity = (activityStack.get(activityStackSize - 1)).get();
+			while ((activityStackSize = activityStack.size()) > 0) {
+				Activity activity = (activityStack.get(activityStackSize - 1)).get();
 
-			// Skip and remove any activities which are dead or in the process of finishing.
-			if (activity == null || activity.isFinishing()) {
-				activityStack.remove(activityStackSize -1);
-				continue;
+				// Skip and remove any activities which are dead or in the process of finishing.
+				if (activity == null || activity.isFinishing()) {
+					activityStack.remove(activityStackSize -1);
+					continue;
+				}
+
+				return activity;
 			}
 
-			return activity;
+			Log.d(TAG, "activity stack is empty, unable to get current activity", Log.DEBUG_MODE);
+			return null;
 		}
-
-		Log.d(TAG, "activity stack is empty, unable to get current activity", Log.DEBUG_MODE);
-		return null;
 	}
 
 	/**
@@ -903,4 +905,3 @@ public abstract class TiApplication extends Application implements KrollApplicat
 
 	public abstract void verifyCustomModules(TiRootActivity rootActivity);
 }
-
