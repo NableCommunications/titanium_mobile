@@ -396,8 +396,12 @@ public abstract class TiApplication extends Application implements KrollApplicat
 	public void onLowMemory ()
 	{
 		// Release all the cached images
-		TiBlobLruCache.getInstance().evictAll();
-		TiImageLruCache.getInstance().evictAll();
+		try {
+			TiBlobLruCache.getInstance().evictAll();
+			TiImageLruCache.getInstance().evictAll();
+		} catch (IllegalStateException e) {
+			Log.e(TAG, "onLowMemory IllegalStateException");
+		}
 		super.onLowMemory();
 	}
 
@@ -407,8 +411,12 @@ public abstract class TiApplication extends Application implements KrollApplicat
 	{
 		if (Build.VERSION.SDK_INT >= TiC.API_LEVEL_HONEYCOMB && level >= TRIM_MEMORY_RUNNING_LOW) {
 			// Release all the cached images
-			TiBlobLruCache.getInstance().evictAll();
-			TiImageLruCache.getInstance().evictAll();
+			try {
+				TiBlobLruCache.getInstance().evictAll();
+				TiImageLruCache.getInstance().evictAll();
+			} catch (IllegalStateException e) {
+				Log.e(TAG, "onTrimMemory IllegalStateException");
+			}
 		}
 		super.onTrimMemory(level);
 	}
