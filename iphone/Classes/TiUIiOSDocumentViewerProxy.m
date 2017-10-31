@@ -41,12 +41,12 @@
 	[self controller].annotation = [args objectAtIndex:0];
 }
 
--(void)show:(id)args
+-(BOOL)show:(id)args
 {
 	ENSURE_SINGLE_ARG_OR_NIL(args,NSDictionary);
 	[self rememberSelf];
-	ENSURE_UI_THREAD(show, args);
-	BOOL animated = [TiUtils boolValue:@"animated" properties:args def:YES];
+	//ENSURE_UI_THREAD(show, args);
+	BOOL animated = [TiUtils boolValue:@"animated" properties:args def:NO];
 
 	TiViewProxy* view = [args objectForKey:@"view"];
 	if (view!=nil)
@@ -54,16 +54,14 @@
 		if ([view supportsNavBarPositioning] && [view isUsingBarButtonItem])
 		{
 			UIBarButtonItem *item = [view barButtonItem];
-			[[self controller] presentOptionsMenuFromBarButtonItem:item animated:animated];
-			return;
+			return [[self controller] presentOptionsMenuFromBarButtonItem:item animated:animated];
 		}
 		
 		CGRect rect = [TiUtils rectValue:args];
-		[[self controller] presentOptionsMenuFromRect:rect inView:[view view] animated:animated];
-		return;
+		return [[self controller] presentOptionsMenuFromRect:rect inView:[view view] animated:animated];
 	}
-	
-	[[self controller] presentPreviewAnimated:animated];
+
+	return [[self controller] presentPreviewAnimated:animated];
 }
 
 -(void)hide:(id)args
