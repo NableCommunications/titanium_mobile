@@ -722,10 +722,16 @@ public abstract class TiBaseActivity extends AppCompatActivity
 			    if ((rotation == Surface.ROTATION_90 || rotation == Surface.ROTATION_270)
 			            && rotation != previousOrientation) {
 			        callOrientationChangedListener(TiApplication.getAppRootOrCurrentActivity(), width, height, rotation);
+					return;
 			    } else if ((rotation == Surface.ROTATION_0 || rotation == Surface.ROTATION_180)
 			            && rotation != previousOrientation) {
 			        callOrientationChangedListener(TiApplication.getAppRootOrCurrentActivity(), width, height, rotation);
+					return;
 			    }
+
+				KrollDict data = new KrollDict();
+				data.put("settingValue", android.provider.Settings.System.getInt(TiApplication.getInstance().getContentResolver(), android.provider.Settings.System.ACCELEROMETER_ROTATION, 0));
+				TiApplication.getInstance().fireAppEvent("orientationSetting", data);
 			}
 		};
 
