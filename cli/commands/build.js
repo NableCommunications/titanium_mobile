@@ -63,6 +63,10 @@ exports.config = function config(logger, config, cli) {
 						'skip-js-minify': {
 							default: false,
 							desc: __('bypasses JavaScript minification; %s builds are never minified; only supported for %s and %s', 'simulator'.cyan, 'Android'.cyan, 'iOS'.cyan)
+						},
+						'run-proguard': {
+							default: false,
+							desc: __('run proguard with proguard.cfg')
 						}
 					},
 					options: appc.util.mix({

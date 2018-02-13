@@ -933,6 +933,10 @@ AndroidBuilder.prototype.validate = function validate(logger, config, cli) {
 		this.minifyJS = false;
 	}
 
+	if (cli.argv['run-proguard']) {
+		this.proguard = true;
+	}
+
 	// check the app name
 	if (cli.tiapp.name.indexOf('&') != -1) {
 		if (config.get('android.allowAppNameAmpersands', false)) {
