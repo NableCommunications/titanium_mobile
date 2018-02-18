@@ -336,13 +336,17 @@
     
 	if (headerViewProxy != nil) {
 		[headerViewProxy setProxyObserver:nil];
-		[[self proxy] forgetProxy:headerViewProxy];
+		if (self != nil) {
+			[[self proxy] forgetProxy:headerViewProxy];
+		}
 		headerViewProxy = nil;
 	}
     
 	if (footerViewProxy != nil) {
 		[footerViewProxy setProxyObserver:nil];
-		[[self proxy] forgetProxy:footerViewProxy];
+		if (self != nil) {
+			[[self proxy] forgetProxy:footerViewProxy];
+		}
 		footerViewProxy = nil;
 	}
     
