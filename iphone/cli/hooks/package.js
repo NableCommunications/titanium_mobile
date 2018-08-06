@@ -221,15 +221,17 @@ exports.init = function (logger, config, cli) {
 		exportsOptions.provisioningProfiles[builder.tiapp.id] = pp.uuid;
 
 		var customExportsOptoinsPlistFile = path.join(builder.buildDir, 'exportOptions.plist');
-		var customExportsOptions = new appc.plist(customExportsOptoinsPlistFile);
-		if (customExportsOptions.provisioningProfiles) {
-			logger.debug(('Detected Custom Exports Options'));
-			Object.keys(customExportsOptions.provisioningProfiles).forEach(function(name) {
-				if (builder.tiapp.id != name) {
-					logger.debug(('provisioning Profiles: %s %s', name, customExportsOptions.provisioningProfiles[name]));
-					exportsOptions.provisioningProfiles[name] = customExportsOptions.provisioningProfiles[name];
-				}
-			});
+		if (fs.existsSync(customExportsOptoinsPlistFile)) {
+			var customExportsOptions = new appc.plist(customExportsOptoinsPlistFile);
+			if (customExportsOptions.provisioningProfiles) {
+				logger.debug(('Detected Custom Exports Options'));
+				Object.keys(customExportsOptions.provisioningProfiles).forEach(function(name) {
+					if (builder.tiapp.id != name) {
+						logger.debug(('provisioning Profiles: %s %s', name, customExportsOptions.provisioningProfiles[name]));
+						exportsOptions.provisioningProfiles[name] = customExportsOptions.provisioningProfiles[name];
+					}
+				});
+			}
 		}
 
 		// check if the app is using CloudKit
