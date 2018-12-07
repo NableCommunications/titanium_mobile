@@ -470,8 +470,6 @@ DEFINE_EXCEPTIONS
 
 - (void)loadUrl:(NSURL *)img
 {
-  [self cancelPendingImageLoads];
-
   if (img != nil) {
     [self removeAllImagesFromContainer];
 
@@ -487,6 +485,8 @@ DEFINE_EXCEPTIONS
     // Skip the imageloader completely if this is obviously a file we can load off the fileystem.
     // why were we ever doing that in the first place...?
     if ([img isFileURL]) {
+      [self cancelPendingImageLoads];
+
       UIImage *image = nil;
       NSString *pathStr = [img path];
       NSRange range = [pathStr rangeOfString:@".app"];
@@ -538,6 +538,8 @@ DEFINE_EXCEPTIONS
     }
 
     if (image != nil) {
+      [self cancelPendingImageLoads];
+
       UIImage *imageToUse = [self rotatedImage:image];
       [(TiUIImageViewProxy *)[self proxy] setImageURL:img];
 
@@ -677,7 +679,6 @@ DEFINE_EXCEPTIONS
   UIImageView *imageview = [self imageView];
 
   [self removeAllImagesFromContainer];
-  [self cancelPendingImageLoads];
 
   if (arg == nil || arg == imageview.image || [arg isEqual:@""] || [arg isKindOfClass:[NSNull class]]) {
     return;

@@ -598,7 +598,12 @@ DEFINE_EXCEPTIONS
         NO);
     return;
   }
-
+  
+  if ([self isCachedRequest:url]) {
+      [self addRequestCache:request];
+      return;
+  }
+  [self addRequestCache:request];
   // we don't have it local or in the cache so we need to fetch it remotely
   if (queue == nil) {
     queue = [[NSOperationQueue alloc] init];
@@ -700,6 +705,8 @@ DEFINE_EXCEPTIONS
       [errorDetail setValue:@"Response returned nil" forKey:NSLocalizedDescriptionKey];
       NSError *error = [NSError errorWithDomain:@"com.appcelerator.titanium.imageloader" code:1 userInfo:errorDetail];
       [[req delegate] imageLoadFailed:req error:error];
+      [self notifyCachedRequest:[req url] onFailed:error];
+
       [request setUserInfo:nil];
       [request release];
       [req release];
@@ -753,18 +760,24 @@ DEFINE_EXCEPTIONS
       [errorDetail setValue:@"Returned invalid image data" forKey:NSLocalizedDescriptionKey];
       NSError *error = [NSError errorWithDomain:@"com.appcelerator.titanium.imageloader" code:1 userInfo:errorDetail];
       [[req delegate] imageLoadFailed:req error:error];
+      [self notifyCachedRequest:[req url] onFailed:error];
+
       [request setUserInfo:nil];
       [request release];
       [req release];
       return;
     }
     [self notifyRequest:req imageCompleted:image];
+    [self notifyCachedRequest:[req url] imageCompleted:image];
+    [self saveToLocalCache:[req url] image:data];
   }
 
   else {
     if ([[req delegate] respondsToSelector:@selector(imageLoadCancelled:)]) {
-      [[req delegate] performSelector:@selector(imageLoadCancelled:) withObject:req];
+        [[req delegate] performSelector:@selector(imageLoadCancelled:) withObject:req];
     }
+    
+    [self notifyCachedRequest:[req url]];
   }
   [request setUserInfo:nil];
   [request release];
@@ -780,9 +793,13 @@ DEFINE_EXCEPTIONS
     if ([[req delegate] respondsToSelector:@selector(imageLoadCancelled:)]) {
       [[req delegate] performSelector:@selector(imageLoadCancelled:) withObject:req];
     }
-  } else {
-    [[req delegate] imageLoadFailed:req error:[response error]];
   }
+  else {
+      [[req delegate] imageLoadFailed:req error:[response error]];
+  }
+  
+  [self notifyCachedRequest:[req url] onError:response];
+  
   [request setUserInfo:nil];
 }
 
@@ -791,6 +808,123 @@ DEFINE_EXCEPTIONS
 #ifdef DEBUG_IMAGE_CACHE
   NSLog(@"[CACHE DEBUG] Purging image cache object %@", obj);
 #endif
+}
+
+#pragma mark RequestCache
+-(void)addRequestCache:(ImageLoaderRequest *)request {
+    if (requestCache==nil) {
+        requestCache = [[NSCache alloc] init];
+        [requestCache setName:@"TiRequestImageCache"];
+    }
+    
+    NSMutableArray *array = [requestCache objectForKey:[request url]];
+    if (array == nil) {
+        array = [[NSMutableArray alloc] init];
+        [requestCache setObject:array forKey:[request url]];
+    }
+    
+    [array addObject:request];
+}
+
+-(void)removeRequestCache:(NSURL *)url {
+    if (requestCache != nil) {
+        [requestCache removeObjectForKey:url];
+    }
+}
+
+-(BOOL)isCachedRequest:(NSURL *)url{
+    if (requestCache!=nil) {
+        NSMutableArray *array = [requestCache objectForKey:url];
+        if ([array count] > 0) {
+            return YES;
+        }
+    }
+    
+    return NO;
+}
+
+-(void)notifyCachedRequest:(NSURL *)url {
+    if (requestCache != nil) {
+        NSMutableArray *cachedLoaderRequests = [requestCache objectForKey:url];
+        
+        for (ImageLoaderRequest *loaderRequest in cachedLoaderRequests) {
+            if ([[loaderRequest delegate] respondsToSelector:@selector(imageLoadCancelled:)]) {
+                [[loaderRequest delegate] performSelector:@selector(imageLoadCancelled:) withObject:loaderRequest];
+            }
+        }
+        
+        [requestCache removeObjectForKey:url];
+    }
+}
+
+-(void)notifyCachedRequest:(NSURL *)url imageCompleted:(UIImage*)image {
+    if (requestCache != nil) {
+        NSMutableArray *cachedLoaderRequests = [requestCache objectForKey:url];
+        
+        for (ImageLoaderRequest *loaderRequest in cachedLoaderRequests) {
+            if ([loaderRequest cancelled]==NO) {
+                [self notifyRequest:loaderRequest imageCompleted:image];
+            }
+            else {
+                if ([[loaderRequest delegate] respondsToSelector:@selector(imageLoadCancelled:)]) {
+                    [[loaderRequest delegate] performSelector:@selector(imageLoadCancelled:) withObject:loaderRequest];
+                }
+            }
+        }
+        
+        [requestCache removeObjectForKey:url];
+    }
+}
+
+-(void)notifyCachedRequest:(NSURL *)url onError:(APSHTTPResponse *)response {
+    if (requestCache != nil) {
+        NSMutableArray *cachedLoaderRequests = [requestCache objectForKey:url];
+        
+        for (ImageLoaderRequest *loaderRequest in cachedLoaderRequests) {
+            if ([loaderRequest cancelled]) {
+                if ([[loaderRequest delegate] respondsToSelector:@selector(imageLoadCancelled:)]) {
+                    [[loaderRequest delegate] performSelector:@selector(imageLoadCancelled:) withObject:loaderRequest];
+                }
+            }
+            else {
+                [[loaderRequest delegate] imageLoadFailed:loaderRequest error:[response error]];
+            }
+        }
+        
+        [requestCache removeObjectForKey:url];
+    }
+}
+
+-(void)notifyCachedRequest:(NSURL *)url onFailed:(NSError *)error {
+    if (requestCache != nil) {
+        NSMutableArray *cachedLoaderRequests = [requestCache objectForKey:url];
+        
+        for (ImageLoaderRequest *loaderRequest in cachedLoaderRequests) {
+            [[loaderRequest delegate] imageLoadFailed:loaderRequest error:error];
+        }
+        
+        [requestCache removeObjectForKey:url];
+    }
+}
+
+-(void)saveToLocalCache:(NSURL *)url image:(NSData *)imageData {
+    if (url!=nil && imageData!=nil) {
+        NSString *localCachePath = [[NSUserDefaults standardUserDefaults] stringForKey:@"localCachePath"];
+        
+        if (localCachePath != nil) {
+            NSString *path = [NSString stringWithFormat:@"%@%@", localCachePath, [url lastPathComponent]];
+            NSFileManager* fm = [NSFileManager defaultManager];
+            
+            if ([fm isDeletableFileAtPath:path]) {
+                [fm removeItemAtPath:path error:nil];
+            }
+            
+            if (![fm createFileAtPath:path contents:imageData  attributes:nil]) {
+                NSLog(@"[ERROR] Unknown error save file");
+            }
+        }
+    }
+    
 }
 
 @end
