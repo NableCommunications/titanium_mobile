@@ -192,7 +192,7 @@ USE_VIEW_FOR_CONTENT_HEIGHT
 
 - (void)startImageLoad:(NSURL *)url;
 {
-  [self cancelPendingImageLoads]; //Just in case we have a crusty old urlRequest.
+  //[self cancelPendingImageLoads]; //Just in case we have a crusty old urlRequest.
   NSDictionary *info = nil;
   NSNumber *hires = [self valueForKey:@"hires"];
   if (hires) {
