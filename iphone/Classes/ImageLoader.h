@@ -118,6 +118,7 @@ typedef enum {
 @interface ImageLoader : NSObject<NSCacheDelegate, APSHTTPRequestDelegate> {
 @private
 	NSCache *cache;
+    NSCache *requestCache;
 	NSOperationQueue* queue;
 	NSMutableArray* timeout;
 	NSRecursiveLock* lock;

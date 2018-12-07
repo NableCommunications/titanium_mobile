@@ -50,6 +50,13 @@ import android.os.Bundle;
 import android.view.View;
 import android.view.ViewParent;
 
+import java.io.File;
+import org.appcelerator.titanium.TiProperties;
+import android.graphics.Bitmap.CompressFormat;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
+import java.io.IOException;
+
 public class TiUIImageView extends TiUIView implements OnLifecycleEvent, Handler.Callback
 {
 	private static final String TAG = "TiUIImageView";
@@ -239,6 +246,7 @@ public class TiUIImageView extends TiUIView implements OnLifecycleEvent, Handler
 				if (bitmap != null) {
 					if (mMemoryCache.get(hash) == null) {
 						mMemoryCache.put(hash, bitmap);
+						saveToLocalCache(imageref.getUrl(), bitmap);
 					}
 					setImage(bitmap);
 					if (!firedLoad) {
@@ -458,6 +466,47 @@ public class TiUIImageView extends TiUIView implements OnLifecycleEvent, Handler
 			loaderThread.start();
 		}
 
+	}
+
+	private void saveToLocalCache(String strUri, Bitmap bitmap) {
+		Log.d(TAG, "saveToLocalCache");
+		
+		TiProperties appProperties = TiApplication.getInstance().getAppProperties();
+		String localCachePath = appProperties.getString("localCachePath", null);
+		
+		if (localCachePath!=null && localCachePath.length()>0) {
+			String prefix = "file://";
+			if (localCachePath.indexOf(prefix) == 0) {
+				localCachePath = localCachePath.substring(prefix.length());
+			}
+			
+			URI uri;
+			OutputStream out = null;
+			try {
+				uri = new URI(strUri);
+				String[] segments = uri.getPath().split("/");
+				if (segments.length > 1) {
+					String fileName = segments[segments.length-1];	
+					localCachePath = localCachePath+fileName;
+					
+					File file = new File(localCachePath);
+					file.createNewFile();
+					out = new FileOutputStream(file);
+					bitmap.compress(CompressFormat.JPEG, 100, out);
+				}
+			}
+			catch(Exception e) {
+				e.printStackTrace();
+			}
+			finally {
+				try {
+					out.close();
+				}
+				catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
 	}
 
 	public double getDuration()
