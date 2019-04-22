@@ -1204,8 +1204,8 @@ TI_INLINE void waitForMemoryPanicCleared(); //WARNING: This must never be run on
   [userActivityDict setObject:dict forKey:@"UIApplicationLaunchOptionsUserActivityKey"];
   [launchOptions setObject:userActivityDict forKey:UIApplicationLaunchOptionsUserActivityDictionaryKey];
 
-  [self tryToInvokeSelector:@selector(application:continueUserActivity:restorationHandler:)
-              withArguments:[NSOrderedSet orderedSetWithObjects:application, userActivity, restorationHandler, nil]];
+  // [self tryToInvokeSelector:@selector(application:continueUserActivity:restorationHandler:)
+  //             withArguments:[NSOrderedSet orderedSetWithObjects:application, userActivity, restorationHandler, nil]];
 
   if (appBooted) {
     [[NSNotificationCenter defaultCenter] postNotificationName:kTiContinueActivity object:self userInfo:dict];
