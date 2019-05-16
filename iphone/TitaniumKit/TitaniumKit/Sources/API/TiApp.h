@@ -12,6 +12,7 @@
 #import "TiHost.h"
 #import "TiRootViewController.h"
 #import <JavaScriptCore/JavaScriptCore.h>
+#import <PushKit/PushKit.h>
 
 extern BOOL applicationInMemoryPanic; // TODO: Remove in SDK 9.0+
 

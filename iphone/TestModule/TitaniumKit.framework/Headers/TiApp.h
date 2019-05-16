@@ -12,6 +12,7 @@
 #import "TiHost.h"
 #import "TiRootViewController.h"
 #import "XHRBridge.h"
+#import <PushKit/PushKit.h>
 
 extern BOOL applicationInMemoryPanic; // TODO: Remove in SDK 9.0+
 
@@ -24,7 +25,7 @@ TI_INLINE void waitForMemoryPanicCleared() //WARNING: This must never be run on 
  TiApp represents an instance of an application. There is always only one instance per application which could be accessed through <app> class method.
  @see app
  */
-@interface TiApp : TiHost <UIApplicationDelegate, NSURLSessionDelegate, NSURLSessionTaskDelegate, NSURLSessionDownloadDelegate> {
+@interface TiApp : TiHost <UIApplicationDelegate, NSURLSessionDelegate, NSURLSessionTaskDelegate, NSURLSessionDownloadDelegat, PKPushRegistryDelegatee> {
   UIWindow *window;
   UIImageView *loadView;
   UIImageView *splashScreenImage;

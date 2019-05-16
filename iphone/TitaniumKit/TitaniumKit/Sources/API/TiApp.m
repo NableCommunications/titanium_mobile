@@ -413,6 +413,13 @@ TI_INLINE void waitForMemoryPanicCleared(); //WARNING: This must never be run on
     launchedShortcutItem = [shortcut retain];
   }
 
+  NSArray *backgroundModes = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"UIBackgroundModes"];
+  if ([TiUtils isIOS8OrGreater] == YES && [backgroundModes containsObject:@"voip"] == YES) {
+      PKPushRegistry* _pkRegistry = [[PKPushRegistry alloc] initWithQueue:dispatch_get_main_queue()];
+      _pkRegistry.delegate = self;
+      _pkRegistry.desiredPushTypes = [NSSet setWithObject:PKPushTypeVoIP];
+  }  
+
   // Queue selector for usage in modules / Hyperloop
   [self tryToInvokeSelector:@selector(application:didFinishLaunchingWithOptions:)
               withArguments:[NSOrderedSet orderedSetWithObjects:application, launchOptions_, nil]];
@@ -1577,5 +1584,46 @@ TI_INLINE void waitForMemoryPanicCleared(); //WARNING: This must never be run on
   }
   return props;
 }
+
+#pragma mark - PushKit  Delegate
+// Handle incoming pushes
+-(void)pushRegistry:(PKPushRegistry *)registry didReceiveIncomingPushWithPayload:(PKPushPayload *)payload forType:(PKPushType)type {
+    // Process the received push
+    NSLog(@"pushRegistry:didReceiveIncomingPushWithPayload %@, %@,  %@", payload.dictionaryPayload, payload.type, type);
+    NSDictionary *eventDic = [NSDictionary dictionaryWithObjectsAndKeys:payload.dictionaryPayload, @"payload",
+                              [NSNumber numberWithBool:([UIApplication sharedApplication].applicationState == UIApplicationStateBackground)], @"isBackground", nil];
+
+  if (appBooted) {
+    [[NSNotificationCenter defaultCenter] postNotificationName:@"receiveAPNS" object:self userInfo:eventDic];
+  } else {
+    [[self queuedBootEvents] setObject:eventDic forKey:@"receiveAPNS"];
+  }
+ 
+}
+
+// Handle updated push credentials
+-(void)pushRegistry:(PKPushRegistry *)registry didUpdatePushCredentials:(PKPushCredentials *)credentials forType:(PKPushType)type {
+    // Register VoIP push token (a property of PKPushCredentials) with server
+    
+    // VOIP 푸시에 관한 device 토큰은 여기서 가져온다.
+    NSString *_strDeviceToken = @"";
+    if([type isEqualToString:PKPushTypeVoIP]) {
+        NSString *temp = [credentials.token description];
+        _strDeviceToken = [[temp stringByTrimmingCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@"<>"]] stringByReplacingOccurrencesOfString:@" " withString:@""];
+          NSDictionary *eventDic = [NSDictionary dictionaryWithObjectsAndKeys:_strDeviceToken,@"deviceToken", nil];
+        if (appBooted) {
+
+          [[NSNotificationCenter defaultCenter] postNotificationName:@"registeVoipToken" object:self userInfo:eventDic];
+        } else {
+          [[self queuedBootEvents] setObject:eventDic forKey:@"registeVoipToken"];
+        }
+    }
+    NSLog(@"pushRegistry:registeVoipToken:didUpdatePushCredentials:%@ forType:%@", _strDeviceToken, type);
+}
+
+- (void)pushRegistry:(PKPushRegistry *)registry didInvalidatePushTokenForType:(PKPushType)type {
+    NSLog(@"pushRegistry:%@ didInvalidatePushTokenForType %@", registry, type);
+}
+
 
 @end
