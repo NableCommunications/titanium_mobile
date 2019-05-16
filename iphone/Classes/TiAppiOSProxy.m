@@ -126,6 +126,15 @@
                                                  name:kTiApplicationLaunchedFromURL
                                                object:nil];
   }
+  
+  if ([TiUtils isIOS8OrGreater]) {
+    if ((count == 1) && [type isEqual:@"receiveAPNS"]) {
+      [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(didReceiveVoipPushNotification:) name:@"receiveAPNS" object:nil];
+    }
+    if ((count == 1) && [type isEqual:@"registeVoipToken"]) {
+      [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(didReceivePushCredentials:) name:@"registeVoipToken" object:nil];
+    }
+  }
 }
 
 - (void)_listenerRemoved:(NSString *)type count:(int)count
@@ -179,6 +188,15 @@
   if ([TiUtils isIOS9OrGreater]) {
     if ((count == 1) && [type isEqual:@"shortcutitemclick"]) {
       [[NSNotificationCenter defaultCenter] removeObserver:self name:kTiApplicationShortcut object:nil];
+    }
+  }
+
+  if ([TiUtils isIOS10OrGreater]) {
+    if ((count == 1) && [type isEqual:@"receiveAPNS"]) {
+      [[NSNotificationCenter defaultCenter] removeObserver:self name:@"receiveAPNS" object:nil];
+    }
+    if ((count == 1) && [type isEqual:@"registeVoipToken"]) {
+      [[NSNotificationCenter defaultCenter] removeObserver:self name:@"registeVoipToken" object:nil];
     }
   }
 }
@@ -944,6 +962,16 @@
   [self fireEvent:@"usernotificationsettings"
        withObject:[self formatUserNotificationSettings:(UIUserNotificationSettings *)[[note userInfo] valueForKey:@"userNotificationSettings"]]];
 }
+
+- (void)didReceiveVoipPushNotification:(NSNotification *)note
+{
+  [self fireEvent:@"receiveAPNS" withObject:[note userInfo]];
+}
+- (void)didReceivePushCredentials:(NSNotification *)note
+{
+  [self fireEvent:@"registeVoipToken" withObject:[note userInfo]];
+}
+
 
 #pragma mark Apple Watchkit notifications
 
