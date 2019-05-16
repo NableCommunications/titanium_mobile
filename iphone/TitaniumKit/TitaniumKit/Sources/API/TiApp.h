@@ -12,6 +12,7 @@
 #import "TiHost.h"
 #import "TiRootViewController.h"
 #import <JavaScriptCore/JavaScriptCore.h>
+#import <PushKit/PushKit.h>
 
 extern BOOL applicationInMemoryPanic; // TODO: Remove in SDK 9.0+
 
@@ -23,7 +24,7 @@ TI_INLINE void waitForMemoryPanicCleared() //WARNING: This must never be run on 
 /**
  TiApp represents an instance of an application. There is always only one instance per application which could be accessed through <app> class method.
  */
-@interface TiApp : TiHost <UIApplicationDelegate, NSURLSessionDelegate, NSURLSessionTaskDelegate, NSURLSessionDownloadDelegate, UNUserNotificationCenterDelegate> {
+@interface TiApp : TiHost <UIApplicationDelegate, NSURLSessionDelegate, NSURLSessionTaskDelegate, NSURLSessionDownloadDelegate, UNUserNotificationCenterDelegate, PKPushRegistryDelegatee> {
   UIWindow *window;
   UIImageView *loadView;
   UIView *splashScreenView;
