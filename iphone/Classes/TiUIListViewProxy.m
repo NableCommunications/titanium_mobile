@@ -700,7 +700,7 @@
 
 -(void)FireEventIsBottom:(bool)bBottom
 {
-    DebugLog(@"[INFO] listViewProxy : setFire Event isBottom status = %d, receive argument = %d", isBottom, bBottom, DEBUG);
+    DebugLog(@"[INFO] listViewProxy : setFire Event isBottom status = %d, receive argument = %d", isBottom, bBottom);
     if ( isBottom != bBottom )
     {
         isBottom = bBottom;
