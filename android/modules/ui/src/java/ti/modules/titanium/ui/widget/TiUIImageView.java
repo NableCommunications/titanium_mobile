@@ -35,6 +35,7 @@ import org.appcelerator.titanium.util.TiResponseCache;
 import org.appcelerator.titanium.util.TiUrl;
 import org.appcelerator.titanium.view.TiDrawableReference;
 import org.appcelerator.titanium.view.TiUIView;
+import org.appcelerator.titanium.util.TiDigestUtils;
 
 import ti.modules.titanium.filesystem.FileProxy;
 import ti.modules.titanium.ui.ImageViewProxy;
@@ -484,14 +485,22 @@ public class TiUIImageView extends TiUIView implements OnLifecycleEvent, Handler
 				localCachePath = localCachePath.substring(prefix.length());
 			}
 
-			URI uri;
 			OutputStream out = null;
 			try {
-				uri = new URI(strUri);
-				String[] segments = uri.getPath().split("/");
-				if (segments.length > 1) {
-					String fileName = segments[segments.length - 1];
-					localCachePath = localCachePath + fileName;
+				boolean saveToMd5Name = appProperties.getBool("saveToMd5Name", false);
+				String fileName = "";
+				if (saveToMd5Name) {
+					fileName = TiDigestUtils.md5Hex(strUri.getBytes("UTF-8"));
+				} else {
+					URI uri = new URI(strUri);
+					String[] segments = uri.getPath().split("/");
+					if (segments.length > 1) {
+						fileName = segments[segments.length - 1];
+					}
+				}
+
+				if (fileName.isEmpty() == false) {
+					localCachePath = localCachePath + fileName + ".jpg";
 
 					File file = new File(localCachePath);
 					file.createNewFile();
