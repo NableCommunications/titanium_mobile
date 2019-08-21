@@ -917,7 +917,16 @@ DEFINE_EXCEPTIONS
     NSString *localCachePath = [[NSUserDefaults standardUserDefaults] stringForKey:@"localCachePath"];
 
     if (localCachePath != nil) {
-      NSString *path = [NSString stringWithFormat:@"%@%@", localCachePath, [url lastPathComponent]];
+      NSString *fileName;
+      BOOL saveToMd5Name = [[NSUserDefaults standardUserDefaults] boolForKey:@"saveToMd5Name"];
+      if (saveToMd5Name) {
+        const char *data = [[url absoluteString] UTF8String];
+        fileName = [TiUtils md5:[NSData dataWithBytes:data length:strlen(data)]];
+      } else {
+        fileName = [url lastPathComponent];
+      }
+      [fileName appendString:@".jpg"];
+      NSString *path = [NSString stringWithFormat:@"%@%@", localCachePath, fileName];
       NSFileManager *fm = [NSFileManager defaultManager];
 
       if ([fm isDeletableFileAtPath:path]) {
