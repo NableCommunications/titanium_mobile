@@ -61,8 +61,7 @@
 
 @synthesize fullImage, leftCap, topCap, hires, localPath, stretchableImage, recentlyResizedImage, lastModified, local;
 
-- (UIImage *)fullImage
-{
+- (UIImage *)fullImage {
   if (fullImage == nil) {
     if (localPath == nil) {
       return nil;
@@ -81,8 +80,7 @@
   return fullImage;
 }
 
-- (void)setData:(NSData *)data
-{
+- (void)setData:(NSData *)data {
   RELEASE_TO_NIL(fullImage);
   RELEASE_TO_NIL(stretchableImage);
   RELEASE_TO_NIL(recentlyResizedImage);
@@ -91,24 +89,21 @@
   [self serialize:data];
 }
 
-- (void)setLeftCap:(TiDimension)cap
-{
+- (void)setLeftCap:(TiDimension)cap {
   if (!TiDimensionEqual(leftCap, cap)) {
     leftCap = cap;
     recapStretchableImage = YES;
   }
 }
 
-- (void)setTopCap:(TiDimension)cap
-{
+- (void)setTopCap:(TiDimension)cap {
   if (!TiDimensionEqual(topCap, cap)) {
     topCap = cap;
     recapStretchableImage = YES;
   }
 }
 
-- (UIImage *)stretchableImage
-{
+- (UIImage *)stretchableImage {
   if (stretchableImage == nil || recapStretchableImage) {
     [stretchableImage release];
     UIImage *theImage = [self fullImage];
@@ -118,8 +113,7 @@
   return stretchableImage;
 }
 
-- (UIImage *)imageForSize:(CGSize)imageSize scalingStyle:(TiImageScalingStyle)scalingStyle
-{
+- (UIImage *)imageForSize:(CGSize)imageSize scalingStyle:(TiImageScalingStyle)scalingStyle {
 
   if (scalingStyle == TiImageScalingStretch) {
     return [self stretchableImage];
@@ -170,13 +164,11 @@
   return recentlyResizedImage;
 }
 
-- (UIImage *)imageForSize:(CGSize)imageSize
-{
+- (UIImage *)imageForSize:(CGSize)imageSize {
   return [self imageForSize:imageSize scalingStyle:TiImageScalingDefault];
 }
 
-- (ImageCacheEntry *)initWithURL:(NSURL *)url
-{
+- (ImageCacheEntry *)initWithURL:(NSURL *)url {
   if (self = [super init]) {
     remoteURL = [url retain];
     local = NO;
@@ -192,8 +184,7 @@
   return self;
 }
 
-- (void)dealloc
-{
+- (void)dealloc {
   RELEASE_TO_NIL(localPath);
   RELEASE_TO_NIL(recentlyResizedImage);
   RELEASE_TO_NIL(stretchableImage);
@@ -203,8 +194,7 @@
   [super dealloc];
 }
 
-- (void)serialize:(NSData *)imageData
-{
+- (void)serialize:(NSData *)imageData {
   if (!local && imageData != nil) {
     NSFileManager *fm = [NSFileManager defaultManager];
     NSString *path = localPath;
@@ -225,13 +215,11 @@
   }
 }
 
-- (NSString *)description
-{
+- (NSString *)description {
   return [NSString stringWithFormat:@"<ImageCache:%@> %@[%@]", self, remoteURL, localPath];
 }
 
-+ (NSString *)cachePathForURL:(NSURL *)url
-{
++ (NSString *)cachePathForURL:(NSURL *)url {
   if ([url isFileURL]) {
     return [url path];
   }
@@ -267,8 +255,7 @@ ImageLoader *sharedLoader = nil;
 
 DEFINE_EXCEPTIONS
 
-- (void)dealloc
-{
+- (void)dealloc {
   RELEASE_TO_NIL(request);
   RELEASE_TO_NIL(delegate);
   RELEASE_TO_NIL(userInfo);
@@ -276,8 +263,7 @@ DEFINE_EXCEPTIONS
   [super dealloc];
 }
 
-- (id)initWithCallback:(NSObject<ImageLoaderDelegate> *)target_ userInfo:(id)userInfo_ url:(NSURL *)url_
-{
+- (id)initWithCallback:(NSObject<ImageLoaderDelegate> *)target_ userInfo:(id)userInfo_ url:(NSURL *)url_ {
   if (self = [super init]) {
     delegate = [target_ retain];
     userInfo = [userInfo_ retain];
@@ -286,25 +272,21 @@ DEFINE_EXCEPTIONS
   return self;
 }
 
-- (void)cancel
-{
+- (void)cancel {
   cancelled = YES;
   [request abort];
   RELEASE_TO_NIL(request);
 }
 
-- (BOOL)cancelled
-{
+- (BOOL)cancelled {
   return cancelled;
 }
 
-- (id)userInfo
-{
+- (id)userInfo {
   return userInfo;
 }
 
-- (NSURL *)url
-{
+- (NSURL *)url {
   return url;
 }
 
@@ -312,8 +294,7 @@ DEFINE_EXCEPTIONS
 
 @implementation ImageLoader
 
-- (id)init
-{
+- (id)init {
   if (self = [super init]) {
     WARN_IF_BACKGROUND_THREAD_OBJ; //NSNotificationCenter is not threadsafe!
     [[NSNotificationCenter defaultCenter] addObserver:self
@@ -325,8 +306,7 @@ DEFINE_EXCEPTIONS
   return self;
 }
 
-- (void)dealloc
-{
+- (void)dealloc {
   WARN_IF_BACKGROUND_THREAD_OBJ; //NSNotificationCenter is not threadsafe!
   [[NSNotificationCenter defaultCenter] removeObserver:self
                                                   name:UIApplicationDidReceiveMemoryWarningNotification
@@ -338,8 +318,7 @@ DEFINE_EXCEPTIONS
   [super dealloc];
 }
 
-- (void)didReceiveMemoryWarning:(id)sender
-{
+- (void)didReceiveMemoryWarning:(id)sender {
 #ifdef DEBUG_IMAGE_CACHE
   vm_statistics_data_t vmStats;
   mach_msg_type_number_t infoCount = HOST_VM_INFO_COUNT;
@@ -355,8 +334,7 @@ DEFINE_EXCEPTIONS
 #endif
 }
 
-+ (ImageLoader *)sharedLoader
-{
++ (ImageLoader *)sharedLoader {
   // GCD allows single-dispatch predicates, specifically for situations like singleton initialization.
   // We should be switching to this pattern EVERYWHERE.
 
@@ -404,22 +382,19 @@ DEFINE_EXCEPTIONS
   return newEntry;
 }
 
-- (void)purge:(NSURL *)url
-{
+- (void)purge:(NSURL *)url {
   NSString *urlStr = [url absoluteString];
   [cache removeObjectForKey:urlStr];
 }
 
-- (CGFloat)imageScale:(UIImage *)image
-{
+- (CGFloat)imageScale:(UIImage *)image {
   if ([image respondsToSelector:@selector(scale)]) {
     return [image scale];
   }
   return 1.0;
 }
 
-- (ImageCacheEntry *)entryForKey:(NSURL *)url
-{
+- (ImageCacheEntry *)entryForKey:(NSURL *)url {
   if (url == nil) {
     return nil;
   }
@@ -508,18 +483,15 @@ DEFINE_EXCEPTIONS
   return result;
 }
 
-- (id)cache:(id)image forURL:(NSURL *)url size:(CGSize)imageSize hires:(BOOL)hires
-{
+- (id)cache:(id)image forURL:(NSURL *)url size:(CGSize)imageSize hires:(BOOL)hires {
   return [[self setImage:image forKey:url hires:hires] imageForSize:imageSize];
 }
 
-- (id)cache:(id)image forURL:(NSURL *)url
-{
+- (id)cache:(id)image forURL:(NSURL *)url {
   return [self cache:image forURL:url size:CGSizeZero hires:NO];
 }
 
-- (id)loadRemote:(NSURL *)url
-{
+- (id)loadRemote:(NSURL *)url {
   if (url == nil)
     return nil;
   UIImage *image = [[self entryForKey:url] imageForSize:CGSizeZero];
@@ -547,31 +519,26 @@ DEFINE_EXCEPTIONS
   return nil;
 }
 
-- (UIImage *)loadImmediateImage:(NSURL *)url
-{
+- (UIImage *)loadImmediateImage:(NSURL *)url {
   return [self loadImmediateImage:url withSize:CGSizeZero];
 }
 
-- (UIImage *)loadImmediateImage:(NSURL *)url withSize:(CGSize)imageSize
-{
+- (UIImage *)loadImmediateImage:(NSURL *)url withSize:(CGSize)imageSize {
   return [[self entryForKey:url] imageForSize:imageSize];
 }
 
-- (UIImage *)loadImmediateStretchableImage:(NSURL *)url
-{
+- (UIImage *)loadImmediateStretchableImage:(NSURL *)url {
   return [self loadImmediateStretchableImage:url withLeftCap:TiDimensionAuto topCap:TiDimensionAuto];
 }
 
-- (UIImage *)loadImmediateStretchableImage:(NSURL *)url withLeftCap:(TiDimension)left topCap:(TiDimension)top
-{
+- (UIImage *)loadImmediateStretchableImage:(NSURL *)url withLeftCap:(TiDimension)left topCap:(TiDimension)top {
   ImageCacheEntry *image = [self entryForKey:url];
   image.leftCap = left;
   image.topCap = top;
   return [image stretchableImage];
 }
 
-- (CGSize)fullImageSize:(NSURL *)url
-{
+- (CGSize)fullImageSize:(NSURL *)url {
   ImageCacheEntry *image = [self entryForKey:url];
   if (image != nil) {
     return [[image fullImage] size];
@@ -580,14 +547,12 @@ DEFINE_EXCEPTIONS
   }
 }
 
-- (void)notifyRequest:(ImageLoaderRequest *)request imageCompleted:(UIImage *)image
-{
+- (void)notifyRequest:(ImageLoaderRequest *)request imageCompleted:(UIImage *)image {
   [[request delegate] imageLoadSuccess:request image:image];
   [request setRequest:nil];
 }
 
-- (void)doImageLoader:(ImageLoaderRequest *)request
-{
+- (void)doImageLoader:(ImageLoaderRequest *)request {
   NSURL *url = [request url];
 
   UIImage *image = [[self entryForKey:url] imageForSize:[request imageSize]];
@@ -598,10 +563,10 @@ DEFINE_EXCEPTIONS
         NO);
     return;
   }
-  
+
   if ([self isCachedRequest:url]) {
-      [self addRequestCache:request];
-      return;
+    [self addRequestCache:request];
+    return;
   }
   [self addRequestCache:request];
   // we don't have it local or in the cache so we need to fetch it remotely
@@ -625,8 +590,7 @@ DEFINE_EXCEPTIONS
   [[TiApp app] startNetwork];
 }
 
-- (ImageLoaderRequest *)loadImage:(NSURL *)url delegate:(NSObject<ImageLoaderDelegate> *)delegate userInfo:(NSDictionary *)userInfo
-{
+- (ImageLoaderRequest *)loadImage:(NSURL *)url delegate:(NSObject<ImageLoaderDelegate> *)delegate userInfo:(NSDictionary *)userInfo {
   ImageLoaderRequest *request = [[[ImageLoaderRequest alloc] initWithCallback:delegate userInfo:userInfo url:url] autorelease];
 
   // if have a queue and it's suspend, just throw our request
@@ -646,8 +610,7 @@ DEFINE_EXCEPTIONS
   return request;
 }
 
-- (void)suspend
-{
+- (void)suspend {
   [lock lock];
   if (queue != nil) {
     [queue setSuspended:YES];
@@ -655,8 +618,7 @@ DEFINE_EXCEPTIONS
   [lock unlock];
 }
 
-- (void)cancel
-{
+- (void)cancel {
   //NOTE: this should only be called on suspend
   //to cause the queue to be stopped
   [lock lock];
@@ -666,8 +628,7 @@ DEFINE_EXCEPTIONS
   [lock unlock];
 }
 
-- (void)resume
-{
+- (void)resume {
   [lock lock];
 
   if (queue != nil) {
@@ -691,8 +652,7 @@ DEFINE_EXCEPTIONS
 
 #pragma mark Delegates
 
-- (void)request:(APSHTTPRequest *)request onLoad:(APSHTTPResponse *)response
-{
+- (void)request:(APSHTTPRequest *)request onLoad:(APSHTTPResponse *)response {
   // hold while we're working with it (release below)
   [request retain];
 
@@ -774,9 +734,9 @@ DEFINE_EXCEPTIONS
 
   else {
     if ([[req delegate] respondsToSelector:@selector(imageLoadCancelled:)]) {
-        [[req delegate] performSelector:@selector(imageLoadCancelled:) withObject:req];
+      [[req delegate] performSelector:@selector(imageLoadCancelled:) withObject:req];
     }
-    
+
     [self notifyCachedRequest:[req url]];
   }
   [request setUserInfo:nil];
@@ -784,8 +744,7 @@ DEFINE_EXCEPTIONS
   [req release];
 }
 
-- (void)request:(APSHTTPRequest *)request onError:(APSHTTPResponse *)response
-{
+- (void)request:(APSHTTPRequest *)request onError:(APSHTTPResponse *)response {
   [[TiApp app] stopNetwork];
   ImageLoaderRequest *req = [[request userInfo] objectForKey:@"request"];
 
@@ -793,138 +752,142 @@ DEFINE_EXCEPTIONS
     if ([[req delegate] respondsToSelector:@selector(imageLoadCancelled:)]) {
       [[req delegate] performSelector:@selector(imageLoadCancelled:) withObject:req];
     }
+  } else {
+    [[req delegate] imageLoadFailed:req error:[response error]];
   }
-  else {
-      [[req delegate] imageLoadFailed:req error:[response error]];
-  }
-  
+
   [self notifyCachedRequest:[req url] onError:response];
-  
+
   [request setUserInfo:nil];
 }
 
-- (void)cache:(NSCache *)cache willEvictObject:(id)obj
-{
+- (void)cache:(NSCache *)cache willEvictObject:(id)obj {
 #ifdef DEBUG_IMAGE_CACHE
   NSLog(@"[CACHE DEBUG] Purging image cache object %@", obj);
 #endif
 }
 
 #pragma mark RequestCache
--(void)addRequestCache:(ImageLoaderRequest *)request {
-    if (requestCache==nil) {
-        requestCache = [[NSCache alloc] init];
-        [requestCache setName:@"TiRequestImageCache"];
-    }
-    
-    NSMutableArray *array = [requestCache objectForKey:[request url]];
-    if (array == nil) {
-        array = [[NSMutableArray alloc] init];
-        [requestCache setObject:array forKey:[request url]];
-    }
-    
-    [array addObject:request];
+- (void)addRequestCache:(ImageLoaderRequest *)request {
+  if (requestCache == nil) {
+    requestCache = [[NSCache alloc] init];
+    [requestCache setName:@"TiRequestImageCache"];
+  }
+
+  NSMutableArray *array = [requestCache objectForKey:[request url]];
+  if (array == nil) {
+    array = [[NSMutableArray alloc] init];
+    [requestCache setObject:array forKey:[request url]];
+  }
+
+  [array addObject:request];
 }
 
--(void)removeRequestCache:(NSURL *)url {
-    if (requestCache != nil) {
-        [requestCache removeObjectForKey:url];
-    }
+- (void)removeRequestCache:(NSURL *)url {
+  if (requestCache != nil) {
+    [requestCache removeObjectForKey:url];
+  }
 }
 
--(BOOL)isCachedRequest:(NSURL *)url{
-    if (requestCache!=nil) {
-        NSMutableArray *array = [requestCache objectForKey:url];
-        if ([array count] > 0) {
-            return YES;
+- (BOOL)isCachedRequest:(NSURL *)url {
+  if (requestCache != nil) {
+    NSMutableArray *array = [requestCache objectForKey:url];
+    if ([array count] > 0) {
+      return YES;
+    }
+  }
+
+  return NO;
+}
+
+- (void)notifyCachedRequest:(NSURL *)url {
+  if (requestCache != nil) {
+    NSMutableArray *cachedLoaderRequests = [requestCache objectForKey:url];
+
+    for (ImageLoaderRequest *loaderRequest in cachedLoaderRequests) {
+      if ([[loaderRequest delegate] respondsToSelector:@selector(imageLoadCancelled:)]) {
+        [[loaderRequest delegate] performSelector:@selector(imageLoadCancelled:) withObject:loaderRequest];
+      }
+    }
+
+    [requestCache removeObjectForKey:url];
+  }
+}
+
+- (void)notifyCachedRequest:(NSURL *)url imageCompleted:(UIImage *)image {
+  if (requestCache != nil) {
+    NSMutableArray *cachedLoaderRequests = [requestCache objectForKey:url];
+
+    for (ImageLoaderRequest *loaderRequest in cachedLoaderRequests) {
+      if ([loaderRequest cancelled] == NO) {
+        [self notifyRequest:loaderRequest imageCompleted:image];
+      } else {
+        if ([[loaderRequest delegate] respondsToSelector:@selector(imageLoadCancelled:)]) {
+          [[loaderRequest delegate] performSelector:@selector(imageLoadCancelled:) withObject:loaderRequest];
         }
+      }
     }
-    
-    return NO;
+
+    [requestCache removeObjectForKey:url];
+  }
 }
 
--(void)notifyCachedRequest:(NSURL *)url {
-    if (requestCache != nil) {
-        NSMutableArray *cachedLoaderRequests = [requestCache objectForKey:url];
-        
-        for (ImageLoaderRequest *loaderRequest in cachedLoaderRequests) {
-            if ([[loaderRequest delegate] respondsToSelector:@selector(imageLoadCancelled:)]) {
-                [[loaderRequest delegate] performSelector:@selector(imageLoadCancelled:) withObject:loaderRequest];
-            }
+- (void)notifyCachedRequest:(NSURL *)url onError:(APSHTTPResponse *)response {
+  if (requestCache != nil) {
+    NSMutableArray *cachedLoaderRequests = [requestCache objectForKey:url];
+
+    for (ImageLoaderRequest *loaderRequest in cachedLoaderRequests) {
+      if ([loaderRequest cancelled]) {
+        if ([[loaderRequest delegate] respondsToSelector:@selector(imageLoadCancelled:)]) {
+          [[loaderRequest delegate] performSelector:@selector(imageLoadCancelled:) withObject:loaderRequest];
         }
-        
-        [requestCache removeObjectForKey:url];
+      } else {
+        [[loaderRequest delegate] imageLoadFailed:loaderRequest error:[response error]];
+      }
     }
+
+    [requestCache removeObjectForKey:url];
+  }
 }
 
--(void)notifyCachedRequest:(NSURL *)url imageCompleted:(UIImage*)image {
-    if (requestCache != nil) {
-        NSMutableArray *cachedLoaderRequests = [requestCache objectForKey:url];
-        
-        for (ImageLoaderRequest *loaderRequest in cachedLoaderRequests) {
-            if ([loaderRequest cancelled]==NO) {
-                [self notifyRequest:loaderRequest imageCompleted:image];
-            }
-            else {
-                if ([[loaderRequest delegate] respondsToSelector:@selector(imageLoadCancelled:)]) {
-                    [[loaderRequest delegate] performSelector:@selector(imageLoadCancelled:) withObject:loaderRequest];
-                }
-            }
-        }
-        
-        [requestCache removeObjectForKey:url];
+- (void)notifyCachedRequest:(NSURL *)url onFailed:(NSError *)error {
+  if (requestCache != nil) {
+    NSMutableArray *cachedLoaderRequests = [requestCache objectForKey:url];
+
+    for (ImageLoaderRequest *loaderRequest in cachedLoaderRequests) {
+      [[loaderRequest delegate] imageLoadFailed:loaderRequest error:error];
     }
+
+    [requestCache removeObjectForKey:url];
+  }
 }
 
--(void)notifyCachedRequest:(NSURL *)url onError:(APSHTTPResponse *)response {
-    if (requestCache != nil) {
-        NSMutableArray *cachedLoaderRequests = [requestCache objectForKey:url];
-        
-        for (ImageLoaderRequest *loaderRequest in cachedLoaderRequests) {
-            if ([loaderRequest cancelled]) {
-                if ([[loaderRequest delegate] respondsToSelector:@selector(imageLoadCancelled:)]) {
-                    [[loaderRequest delegate] performSelector:@selector(imageLoadCancelled:) withObject:loaderRequest];
-                }
-            }
-            else {
-                [[loaderRequest delegate] imageLoadFailed:loaderRequest error:[response error]];
-            }
-        }
-        
-        [requestCache removeObjectForKey:url];
-    }
-}
+- (void)saveToLocalCache:(NSURL *)url image:(NSData *)imageData {
+  if (url != nil && imageData != nil) {
+    NSString *localCachePath = [[NSUserDefaults standardUserDefaults] stringForKey:@"localCachePath"];
 
--(void)notifyCachedRequest:(NSURL *)url onFailed:(NSError *)error {
-    if (requestCache != nil) {
-        NSMutableArray *cachedLoaderRequests = [requestCache objectForKey:url];
-        
-        for (ImageLoaderRequest *loaderRequest in cachedLoaderRequests) {
-            [[loaderRequest delegate] imageLoadFailed:loaderRequest error:error];
-        }
-        
-        [requestCache removeObjectForKey:url];
-    }
-}
+    if (localCachePath != nil) {
+      NSString *fileName;
+      BOOL saveToMd5Name = [[NSUserDefaults standardUserDefaults] boolForKey:@"saveToMd5Name"];
+      if (saveToMd5Name) {
+        const char *data = [[url absoluteString] UTF8String];
+        fileName = [TiUtils md5:[NSData dataWithBytes:data length:strlen(data)]];
+      } else {
+        fileName = [url lastPathComponent];
+      }
+      [fileName appendString:@".jpg"];
+      NSString *path = [NSString stringWithFormat:@"%@%@", localCachePath, fileName];
+      NSFileManager *fm = [NSFileManager defaultManager];
 
--(void)saveToLocalCache:(NSURL *)url image:(NSData *)imageData {
-    if (url!=nil && imageData!=nil) {
-        NSString *localCachePath = [[NSUserDefaults standardUserDefaults] stringForKey:@"localCachePath"];
-        
-        if (localCachePath != nil) {
-            NSString *path = [NSString stringWithFormat:@"%@%@", localCachePath, [url lastPathComponent]];
-            NSFileManager* fm = [NSFileManager defaultManager];
-            
-            if ([fm isDeletableFileAtPath:path]) {
-                [fm removeItemAtPath:path error:nil];
-            }
-            
-            if (![fm createFileAtPath:path contents:imageData  attributes:nil]) {
-                NSLog(@"[ERROR] Unknown error save file");
-            }
-        }
+      if ([fm isDeletableFileAtPath:path]) {
+        [fm removeItemAtPath:path error:nil];
+      }
+
+      if (![fm createFileAtPath:path contents:imageData attributes:nil]) {
+        NSLog(@"[ERROR] Unknown error save file");
+      }
     }
-    
+  }
 }
 
 @end
