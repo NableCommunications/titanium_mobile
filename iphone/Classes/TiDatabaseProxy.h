@@ -48,6 +48,7 @@ JSExportAs(executeAllAsync,
 
 - (void)removeStatement:(PLSqliteResultSet *)statement;
 - (PLSqliteDatabase *)database;
+- (id)execute:(id)arg;
 
 @end
 
