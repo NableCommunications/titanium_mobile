@@ -8,6 +8,7 @@
 #import "TiApp+Addons.h"
 #ifdef USE_TI_APPIOS
 #import <CoreSpotlight/CoreSpotlight.h>
+#import <Intents/Intents.h>
 #endif
 
 @implementation TiApp (Addons)
@@ -118,13 +119,22 @@
     [dict setObject:[userActivity userInfo] forKey:@"userInfo"];
   }
 
+  if ([TiUtils isIOSVersionOrGreater:@"10.0"] && [[userActivity activityType] isEqualToString:@"INStartAudioCallIntent"]) {
+    INInteraction *interaction = userActivity.interaction;
+    INStartAudioCallIntent *startAudioCallIntent = (INStartAudioCallIntent *)interaction.intent;
+    INPerson *contact = startAudioCallIntent.contacts[0];
+    INPersonHandle *personHandle = contact.personHandle;
+    NSString *phoneNumber = personHandle.value;
+    [dict setObject:phoneNumber forKey:@"INStartAudioCallIntentActivityValue"];
+  }
+
   // Update launchOptions so that we send only expected values rather than NSUserActivity
   NSMutableDictionary *userActivityDict = [NSMutableDictionary dictionaryWithDictionary:launchOptions[UIApplicationLaunchOptionsUserActivityDictionaryKey]];
   [userActivityDict setObject:dict forKey:@"UIApplicationLaunchOptionsUserActivityKey"];
   [launchOptions setObject:userActivityDict forKey:UIApplicationLaunchOptionsUserActivityDictionaryKey];
 
-  [self tryToInvokeSelector:@selector(application:continueUserActivity:restorationHandler:)
-              withArguments:[NSOrderedSet orderedSetWithObjects:application, userActivity, restorationHandler, nil]];
+  // [self tryToInvokeSelector:@selector(application:continueUserActivity:restorationHandler:)
+  // withArguments:[NSOrderedSet orderedSetWithObjects:application, userActivity, restorationHandler, nil]];
 
   if (appBooted) {
     [[NSNotificationCenter defaultCenter] postNotificationName:kTiContinueActivity object:self userInfo:dict];
@@ -154,11 +164,12 @@
 
 - (void)application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken
 {
-  NSString *token = [[[[deviceToken description] stringByReplacingOccurrencesOfString:@"<" withString:@""]
-      stringByReplacingOccurrencesOfString:@">"
-                                withString:@""]
-      stringByReplacingOccurrencesOfString:@" "
-                                withString:@""];
+  const unsigned char *bytes = (const unsigned char *)deviceToken.bytes;
+  NSMutableString *hex = [NSMutableString new];
+  for (NSInteger i = 0; i < deviceToken.length; i++) {
+    [hex appendFormat:@"%02x", bytes[i]];
+  }
+  NSString *token = [hex copy];
 
   RELEASE_TO_NIL(remoteDeviceUUID);
   remoteDeviceUUID = [token copy];
