@@ -1146,7 +1146,7 @@ TI_INLINE void waitForMemoryPanicCleared(); //WARNING: This must never be run on
     [dict setObject:[userActivity userInfo] forKey:@"userInfo"];
   }
 
-  if ([TiUtils isIOS9OrGreater] && [[userActivity activityType] isEqualToString:@"INStartAudioCallIntent"]) {
+  if ([TiUtils isIOSVersionOrGreater:@"10.0"] && ([[userActivity activityType] isEqualToString:@"INStartCallIntent"] || [[userActivity activityType] isEqualToString:@"INStartAudioCallIntent"])) {
     INInteraction *interaction = userActivity.interaction;
     INStartAudioCallIntent *startAudioCallIntent = (INStartAudioCallIntent *)interaction.intent;
     INPerson *contact = startAudioCallIntent.contacts[0];
