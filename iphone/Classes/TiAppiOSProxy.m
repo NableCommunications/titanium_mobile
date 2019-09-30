@@ -196,7 +196,7 @@
     [[NSNotificationCenter defaultCenter] removeObserver:self name:kTiApplicationShortcut object:nil];
   }
 
-  if ([TiUtils isIOS10OrGreater]) {
+  if ([TiUtils isIOSVersionOrGreater:@"10.0"]) {
     if ((count == 1) && [type isEqual:@"receiveAPNS"]) {
       [[NSNotificationCenter defaultCenter] removeObserver:self name:@"receiveAPNS" object:nil];
     }
