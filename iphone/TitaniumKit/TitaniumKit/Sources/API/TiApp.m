@@ -1508,8 +1508,7 @@ TI_INLINE void waitForMemoryPanicCleared(void); //WARNING: This must never be ru
   // VOIP 푸시에 관한 device 토큰은 여기서 가져온다.
   NSString *_strDeviceToken = @"";
   if ([type isEqualToString:PKPushTypeVoIP]) {
-    NSString *temp = [credentials.token description];
-    _strDeviceToken = [[temp stringByTrimmingCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@"<>"]] stringByReplacingOccurrencesOfString:@" " withString:@""];
+    _strDeviceToken = [TiUtils convertToHexFromData:credentials.token];
     NSDictionary *eventDic = [NSDictionary dictionaryWithObjectsAndKeys:_strDeviceToken, @"deviceToken", nil];
     if (appBooted) {
 
