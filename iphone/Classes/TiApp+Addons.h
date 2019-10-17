@@ -7,7 +7,7 @@
 
 #import <TitaniumKit/TiApp.h>
 
-@interface TiApp (Addons)
+@interface TiApp (Addons) <PKPushRegistryDelegate>
 
 NS_ASSUME_NONNULL_BEGIN
 
