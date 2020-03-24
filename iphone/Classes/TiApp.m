@@ -754,7 +754,7 @@ TI_INLINE void waitForMemoryPanicCleared(); //WARNING: This must never be run on
 - (void)flushCompletionHandlerQueue
 {
   if (pendingCompletionHandlers != nil) {
-    for (id key in pendingCompletionHandlers) {
+    for (NSString *key in [pendingCompletionHandlers allKeys]) {
       [self completionHandler:key withResult:2]; //UIBackgroundFetchResultFailed
     }
   }
