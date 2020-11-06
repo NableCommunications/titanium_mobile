@@ -154,14 +154,14 @@
 }
 - (void)viewDidAppear:(BOOL)animated
 {
-  if ([_proxy conformsToProtocol:@protocol(TiWindowProtocol)]) {
+  if (_proxy && [_proxy conformsToProtocol:@protocol(TiWindowProtocol)]) {
     [(id<TiWindowProtocol>)_proxy viewDidAppear:animated];
   }
   [super viewDidAppear:animated];
 }
 - (void)viewDidDisappear:(BOOL)animated
 {
-  if ([_proxy conformsToProtocol:@protocol(TiWindowProtocol)]) {
+  if (_proxy && [_proxy conformsToProtocol:@protocol(TiWindowProtocol)]) {
     [(id<TiWindowProtocol>)_proxy viewDidDisappear:animated];
   }
   [super viewDidDisappear:animated];

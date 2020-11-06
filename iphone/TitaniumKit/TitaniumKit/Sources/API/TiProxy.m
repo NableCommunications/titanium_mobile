@@ -1070,12 +1070,11 @@ DEFINE_EXCEPTIONS
   // we might store as properties (such as NSArray) use isEqual: as a
   // strict address/hash comparison. So the notification must always
   // occur, and it's up to the delegate to make sense of it (for now).
-
   if (newValue) {
     // Remember any proxies set on us so they don't get GC'd
-    if ([propvalue isKindOfClass:[TiProxy class]]) {
-      [self rememberProxy:propvalue];
-    }
+    // if ([propvalue isKindOfClass:[TiProxy class]]) {
+    //   [self rememberProxy:propvalue];
+    // }
     [self addKey:key toValue:propvalue];
   }
   pthread_rwlock_unlock(&dynpropsLock);
