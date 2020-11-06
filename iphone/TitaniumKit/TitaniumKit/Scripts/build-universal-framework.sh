@@ -21,7 +21,13 @@ FRAMEWORK="${UNIVERSAL_LIBRARY_DIR}/${FRAMEWORK_NAME}.framework"
 # Build Frameworks
 ######################
 
-xcodebuild -scheme ${PROJECT_NAME} -sdk iphonesimulator -configuration ${CONFIGURATION} clean build CONFIGURATION_BUILD_DIR=${BUILD_DIR}/${CONFIGURATION}-iphonesimulator 2>&1
+# Exclude arm64 architecture from simulator build in XCode 12+- TIMOB-28042
+
+if [[ $XCODE_VERSION -ge 1200 ]];  then
+xcodebuild -scheme ${PROJECT_NAME} -sdk iphonesimulator EXCLUDED_ARCHS=arm64  -configuration ${CONFIGURATION} clean build CONFIGURATION_BUILD_DIR=${BUILD_DIR}/${CONFIGURATION}-iphonesimulator 2>&1
+else
+xcodebuild -scheme ${PROJECT_NAME} -sdk iphonesimulator  -configuration ${CONFIGURATION} clean build CONFIGURATION_BUILD_DIR=${BUILD_DIR}/${CONFIGURATION}-iphonesimulator 2>&1
+fi
 
 xcodebuild -scheme ${PROJECT_NAME} -sdk iphoneos -configuration ${CONFIGURATION} clean build CONFIGURATION_BUILD_DIR=${BUILD_DIR}/${CONFIGURATION}-iphoneos 2>&1
 
